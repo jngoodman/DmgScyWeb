@@ -4,6 +4,8 @@ dmgscy.db
 __pycache__/
 *.py[cod]
 *$py.class
+bin/
+obj/
 
 # C extensions
 *.so
