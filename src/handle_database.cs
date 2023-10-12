@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Data;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -21,19 +22,27 @@ public class HandleDatabase{
         RETURN,
     }   
         
-    private List<string>? ExecuteCommand(SqliteCommand command, List<Options> options){
+    private DataTable? ExecuteCommand(SqliteCommand command, List<Options> options){
         if(!options.Contains(Options.RETURN)){
             command.ExecuteNonQuery();
             return null;
         }       
-        List<string> returnList = new List<string>();         
+        DataTable dataTable = new DataTable();
         SqliteDataReader reader = command.ExecuteReader();
-        while(reader.Read()){
-            foreach(int columnNumber in reader){
-                returnList.Add(reader.GetString(columnNumber));
-            }
+        for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
+            DataColumn column = new DataColumn(reader.GetName(columnNumber));
+            dataTable.Columns.Add(column);
         }
-        return returnList;
+        while(reader.Read()){
+            int rowNumber = 0;
+            DataRow row = dataTable.NewRow();
+            dataTable.Rows.Add(row);
+            for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
+                dataTable.Rows[rowNumber][columnNumber] = reader.GetValue(columnNumber);
+            }
+            rowNumber++;
+        }
+        return dataTable;
     }
     
     private void InsertParams(SqliteCommand command, List<string>? parameters, List<Options> options){
@@ -50,12 +59,13 @@ public class HandleDatabase{
         }
     }      
 
-    public List<string>? RunQuery(string commandString, List<Options> options, List<string>? parameters){
+    public DataTable? RunQuery(string commandString, List<Options> options, List<string>? parameters){
+        //Will return a DataTable ready for Html injection only if RETURN is a specified option. See HandleDatabase.ExecuteCommand();
         SqliteCommand command = new SqliteCommand(commandString, dbConnection);
         InsertParams(command, parameters, options);
         dbConnection.Open();
-        var returnList = ExecuteCommand(command, options);
+        DataTable? dataTable = ExecuteCommand(command, options);
         dbConnection.Close();
-        return returnList;
+        return dataTable;
     }
 }
