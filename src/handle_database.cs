@@ -16,61 +16,48 @@ public class HandleDatabase{
         this.connectionString = Constants.Sql.dataSource;
         this.dbConnection = new SqliteConnection(connectionString);
     }
-
-    public enum Options{
-        PARAMS,
-        RETURN,
-    }   
         
-    private DataTable? ExecuteCommand(SqliteCommand command, List<Options>? options = null){
-        if(options != null){
-            if(!options.Contains(Options.RETURN) ){
-                command.ExecuteNonQuery();
-                return null;
-            }       
-            DataTable dataTable = new DataTable();
-            SqliteDataReader reader = command.ExecuteReader();
-            for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
+    private DataTable? ExecuteCommand(SqliteCommand command, bool returnTable = false){
+        if(!returnTable){
+            Console.WriteLine("Test");
+            command.ExecuteNonQuery();
+            Console.WriteLine("Test");
+            return null;
+        }       
+        DataTable dataTable = new DataTable();
+        SqliteDataReader reader = command.ExecuteReader();
+        for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
             DataColumn column = new DataColumn(reader.GetName(columnNumber));
             dataTable.Columns.Add(column);
             }
-            while(reader.Read()){
-                int rowNumber = 0;
-                DataRow row = dataTable.NewRow();
-                dataTable.Rows.Add(row);
-                for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
-                    dataTable.Rows[rowNumber][columnNumber] = reader.GetValue(columnNumber);
-                }
-                rowNumber++;
+        while(reader.Read()){
+            int rowNumber = 0;
+            DataRow row = dataTable.NewRow();
+            dataTable.Rows.Add(row);
+            for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
+                dataTable.Rows[rowNumber][columnNumber] = reader.GetValue(columnNumber);
             }
-            return dataTable;
-            }
-        return null;
+            rowNumber++;
+         }
+        return dataTable;
     }
     
-    private void InsertParams(SqliteCommand command, List<string>? parameters = null, List<Options>? options = null){
-        if(options != null){
-            if(options.Contains(Options.PARAMS) && parameters != null){
-                foreach(var parameter in parameters){
-                        command.Parameters.Add(parameter);
-                }
-            }
-            else if(options.Contains(Options.PARAMS) && parameters == null){
-                Console.WriteLine("Warning: PARAMS in Options but no parameters provided. Ignoring PARAMS.");
-            }
-            else if(!options.Contains(Options.PARAMS) && parameters != null){
-                Console.WriteLine("Warning: PARAMS not in Options but parameters provided. Ignoring parameters.");
+    private void InsertParams(SqliteCommand command, List<string>? parameters = null, bool returnTable = false){
+        if(parameters != null){
+            for(int paramNumber = 0; paramNumber < parameters.Count; paramNumber ++){
+                string positionIdentifier = $"@{paramNumber}";
+                command.Parameters.Add(new SqliteParameter(positionIdentifier, parameters[paramNumber]));
             }
         } 
     }     
 
-    public DataTable? RunQuery(string commandString, List<Options>? options = null, List<string>? parameters = null){
+    public DataTable? RunQuery(string commandString, List<string>? parameters = null, bool returnTable = false){
         //Will return a DataTable ready for Html injection only if RETURN is a specified option. See HandleDatabase.ExecuteCommand();
         SqliteCommand command = new SqliteCommand(commandString, dbConnection);
-        InsertParams(command, parameters, options);
+        InsertParams(command, parameters, returnTable);
         dbConnection.Open();
         Console.WriteLine(commandString);
-        DataTable? dataTable = ExecuteCommand(command, options);
+        DataTable? dataTable = ExecuteCommand(command, returnTable);
         dbConnection.Close();
         return dataTable;
     }

@@ -18,10 +18,10 @@ static class Constants {
     public static class Sql {
         public static string dataSource = "Data Source=\"src/dmgscy.db\"";
         public static string createBands = "CREATE TABLE IF NOT EXISTS bands (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
-        public static string addBands = "INSERT OR IGNORE INTO bands (name, url) VALUES (?, ?);";
+        public static string addBands = "INSERT OR IGNORE INTO bands (name, url) VALUES (@0, @1);";
         public static string selectBands = "SELECT * FROM bands;";
         public static string createCollection = "CREATE TABLE IF NOT EXISTS {collectionName} (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
-        public static string addCollection = "INSERT OR IGNORE INTO {collectionName} (name, url, image, price) VALUES (?, ?, ?, ?);";
+        public static string addCollection = "INSERT OR IGNORE INTO {collectionName} (name, url, image, price) VALUES (@0, @1, @2, @3);";
         public static string selectCollection = "SELECT * FROM {collectionName};";
     }
 

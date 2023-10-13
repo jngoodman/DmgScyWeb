@@ -14,10 +14,7 @@ public static class Run{
             parameters.Add(band.url);
         }
         databaseHandler.RunQuery(Constants.Sql.addBands, parameters: parameters);
-        List<HandleDatabase.Options> options = new List<HandleDatabase.Options>(){
-            HandleDatabase.Options.RETURN
-        };
-        DataTable? dataTable = databaseHandler.RunQuery(Constants.Sql.selectBands, options: options);
+        DataTable? dataTable = databaseHandler.RunQuery(Constants.Sql.selectBands, returnTable: true);
         var baseData = new PageData(Constants.Html.indexBase);
         if(dataTable != null){
             baseData.WriteNewHTML(outfileLoc: Constants.Html.index, dataTable: dataTable);
