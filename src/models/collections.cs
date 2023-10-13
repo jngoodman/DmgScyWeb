@@ -5,8 +5,4 @@ public class Collection{
     public string? url { get; set; }
     public string? image{ get; set; }
     public string? price { get; set; }
-
-    public Collection(){
-
-    }
 }

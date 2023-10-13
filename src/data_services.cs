@@ -9,13 +9,13 @@ interface IDataService{
     public IList<HtmlNode> Nodes {get; set; }
 }
 
-class BandsService: IDataService {
+class BandService: IDataService {
     public string Url{get; set; } = Constants.all_bands_url;
     public string Css_selector{get; set; } = Constants.band_css_selector;
     public GetHTML Get_html {get; set; }
     public IList<HtmlNode> Nodes {get; set; }
 
-    public BandsService(){
+    public BandService(){
         this.Get_html = new GetHTML(Url);
         this.Nodes = Get_html.ReturnNodes(Css_selector);
     }    
@@ -26,7 +26,7 @@ class BandsService: IDataService {
             var link_subnode = GetHTML.ReturnSubNode(node, Constants.band_link_selector);
             var name = GetHTML.ReturnInnerText(link_subnode);
             var url = GetHTML.ReturnValue(link_subnode, Constants.url_attribute);
-            var band = new Band { name = name, url = $"{Constants.base_url}{url}"};
+            var band = new Band(name: name, url: $"{Constants.base_url}{url}");
             band_list.Add(band);
         }
         return band_list;

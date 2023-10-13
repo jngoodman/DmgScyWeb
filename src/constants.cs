@@ -21,11 +21,14 @@ static class Constants {
         public static string addBands = "INSERT OR IGNORE INTO bands (name, url) VALUES (?, ?);";
         public static string selectBands = "SELECT * FROM bands;";
         public static string createCollection = "CREATE TABLE IF NOT EXISTS {collectionName} (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
-        public static string addCollection = "INSERT OR IGNORE INTO {collectionName} (name, url, image, price) VALUES (?, ?);";
+        public static string addCollection = "INSERT OR IGNORE INTO {collectionName} (name, url, image, price) VALUES (?, ?, ?, ?);";
         public static string selectCollection = "SELECT * FROM {collectionName};";
     }
 
     public static class Html {
+        public static string indexBase = "src/pagedata/index_base.html";
+        public static string collectionBase = "src/pagedata/collection_base.html";
+        public static string insertionMarker = "##TableMarker##";
         public static string index = "src/pagedata/index.html";
         public static string collection = "src/pagedata/collection.html";
     }

@@ -1,10 +1,11 @@
 namespace DmgScy;
 
 public class Band{
-    public string? name{ get; set; }
-    public string? url { get; set; }
+    public string name;
+    public string url;
 
-    public Band(){
-
+    public Band(string name, string url){
+        this.name = name;
+        this.url = url;
     }
 }
