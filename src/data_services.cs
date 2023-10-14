@@ -1,4 +1,6 @@
+using System.Data;
 using HtmlAgilityPack;
+using Microsoft.Data.Sqlite;
 
 namespace DmgScy;
 
@@ -14,22 +16,51 @@ class BandService: IDataService {
     public string Css_selector{get; set; } = Constants.band_css_selector;
     public GetHTML Get_html {get; set; }
     public IList<HtmlNode> Nodes {get; set; }
+    public HandleDatabase databaseHandler {get; set; }
 
     public BandService(){
         this.Get_html = new GetHTML(Url);
         this.Nodes = Get_html.ReturnNodes(Css_selector);
+        this.databaseHandler = new HandleDatabase();        
     }    
 
     public List<Band> GetBands(){
-        var band_list = new List<Band>();
+        var bandList = new List<Band>();
         foreach(var node in Nodes){
             var link_subnode = GetHTML.ReturnSubNode(node, Constants.band_link_selector);
             var name = GetHTML.ReturnInnerText(link_subnode);
             var url = GetHTML.ReturnValue(link_subnode, Constants.url_attribute);
             var band = new Band(name: name, url: $"{Constants.base_url}{url}");
-            band_list.Add(band);
+            bandList.Add(band);
         }
-        return band_list;
+        return bandList;
+    }
+
+    public void DatabaseCreate(){
+        databaseHandler.RunQuery(Constants.Sql.createBands);
+    }
+
+    public DataTable? DatabaseSelect(){
+        DataTable? dataTable = databaseHandler.RunQuery(Constants.Sql.selectBands, returnTable: true);
+        return dataTable;
+    }
+
+    public Dictionary<string, DataTable?> DatabaseSelectWithHeader(){
+        Dictionary<string, DataTable?> dataTableWithHeader = new Dictionary<string, DataTable?>(){
+            {"Bands", DatabaseSelect()}
+        };
+        return dataTableWithHeader;
+    }
+
+    public void DatabaseInsert(){
+        List<Band> bandList = GetBands();
+        foreach(Band band in bandList){
+            List<SqliteParameter> parameterList = new List<SqliteParameter>(){
+                new SqliteParameter("@name", band.name),
+                new SqliteParameter("@url", band.url)
+            };
+            databaseHandler.RunQuery(Constants.Sql.addBands, parameters: parameterList);
+        }
     }    
 }
 

@@ -2,6 +2,7 @@ using System.Data;
 using System.Text;
 using System.IO;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Linq.Expressions;
 
 namespace DmgScy;
 
@@ -14,31 +15,33 @@ public class PageData {
         this.html = String.Concat(File.ReadAllLines(fileLoc));
     }
 
-    private string ConvertTableToHTML(DataTable dataTable){
+    private void HandleTableColumns(DataTable dataTable, StringBuilder stringBuilder, DataRow row, string tableHeader){
+        if(tableHeader == "Bands"){
+            stringBuilder.Append($"<td><a href=\"{Constants.localhost}collection/{row["name"]}\">{row["name"]}</a></td>");
+        } 
+    }
+
+    private string ConvertTableToHTML(DataTable dataTable, string tableHeader){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.Append("<table>");
         foreach(DataRow row in dataTable.Rows){
             stringBuilder.Append("<tr>");
-            foreach(DataColumn column in dataTable.Columns){
-                stringBuilder.Append($"<td>{row[column.ColumnName]}</td>");
-            }
+            HandleTableColumns(dataTable, stringBuilder, row, tableHeader);
             stringBuilder.Append("</tr>");
         }
         stringBuilder.Append("</table>");
         return stringBuilder.ToString();
     }
 
-    private string InsertTableIntoHTML(DataTable dataTable){
-        string tableElement = ConvertTableToHTML(dataTable);
+    private string InsertTableIntoHTML(DataTable dataTable, string tableHeader){
+        string tableElement = ConvertTableToHTML(dataTable, tableHeader);
         string newHtml = html.Replace(Constants.Html.insertionMarker, tableElement);
         return newHtml;
     }
 
-    public void WriteNewHTML(string outfileLoc, DataTable dataTable){
-        string outContent = InsertTableIntoHTML(dataTable);
+    public void WriteNewHTML(string outfileLoc, DataTable dataTable, string tableHeader){
+        string outContent = InsertTableIntoHTML(dataTable, tableHeader);
         File.WriteAllText(outfileLoc, outContent);
     }
-
-
 }
 

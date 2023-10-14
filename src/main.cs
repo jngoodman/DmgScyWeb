@@ -5,19 +5,14 @@ namespace DmgScy;
 public static class Run{
     public static void Main(string[] args){
         BandService bandService = new BandService();
-        List<Band> bandList = bandService.GetBands();
-        HandleDatabase databaseHandler = new HandleDatabase();
-        databaseHandler.RunQuery(Constants.Sql.createBands);
-        List<string> parameters = new List<string>();
-        foreach(Band band in bandList){
-            parameters.Add(band.name);
-            parameters.Add(band.url);
-        }
-        databaseHandler.RunQuery(Constants.Sql.addBands, parameters: parameters);
-        DataTable? dataTable = databaseHandler.RunQuery(Constants.Sql.selectBands, returnTable: true);
+        bandService.DatabaseCreate();
+        bandService.DatabaseInsert();
+        Dictionary<string, DataTable?> dataTableWithHeader = bandService.DatabaseSelectWithHeader();
+        string header = dataTableWithHeader.First().Key;
+        DataTable? dataTable = dataTableWithHeader.First().Value;
         var baseData = new PageData(Constants.Html.indexBase);
-        if(dataTable != null){
-            baseData.WriteNewHTML(outfileLoc: Constants.Html.index, dataTable: dataTable);
+        if(dataTable!= null){
+            baseData.WriteNewHTML(outfileLoc: Constants.Html.index, dataTable: dataTable, tableHeader: header);
         }
         var pageData = new PageData(Constants.Html.index);
         var server = new Server(Constants.localhost, pageData.html);
