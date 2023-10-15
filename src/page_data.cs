@@ -17,19 +17,25 @@ public class PageData {
 
     private void HandleTableColumns(DataTable dataTable, StringBuilder stringBuilder, DataRow row, string tableHeader){
         if(tableHeader == "Bands"){
-            stringBuilder.Append($"<td><a href=\"{Constants.localhost}collection/{row["name"]}\">{row["name"]}</a></td>");
+            object bandNameObj = row["name"];
+            string bandName = $"{bandNameObj}";
+            StringBuilder urlString = new StringBuilder(bandName);
+            urlString.Replace(" ", "");
+            urlString.Replace("/", "");
+            string bandNameUrl = urlString.ToString().ToLower();
+            stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
         } 
     }
 
     private string ConvertTableToHTML(DataTable dataTable, string tableHeader){
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append("<table>");
+        stringBuilder.AppendLine("\n<table>");
         foreach(DataRow row in dataTable.Rows){
-            stringBuilder.Append("<tr>");
+            stringBuilder.AppendLine("<tr>");
             HandleTableColumns(dataTable, stringBuilder, row, tableHeader);
-            stringBuilder.Append("</tr>");
+            stringBuilder.AppendLine("\n</tr>");
         }
-        stringBuilder.Append("</table>");
+        stringBuilder.AppendLine("</table>");
         return stringBuilder.ToString();
     }
 
