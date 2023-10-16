@@ -30,8 +30,10 @@ static class Constants {
     public static class Html {
         public static string indexBase = "src/pagedata/index_base.html";
         public static string collectionBase = "src/pagedata/collection_base.html";
-        public static string insertionMarker = "##TableMarker##";
         public static string index = "src/pagedata/index.html";
+        public static string shutdown = "src/pagedata/shutdown.html";
         public static string collection = "src/pagedata/collection.html";
+        public static string shutdownCommand = "/shutdown";
+        public static string insertionMarker = "##TableMarker##";
     }
 }

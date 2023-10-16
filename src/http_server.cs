@@ -19,13 +19,18 @@ class Server{
     }
 
     private void HandlePageData(HttpListenerRequest request){
-        string? pagePath = request.Url?.AbsolutePath;
         if (request.Url?.AbsoluteUri == url){
                 pageData = indexData;
         }
-        if ((request.Url?.AbsolutePath == pagePath) && (request.Url?.AbsoluteUri != url)){
+        else{
+            if(request.Url?.AbsolutePath == Constants.Html.shutdownCommand){                
+                PageData shutdownPage = new PageData(fileLoc: Constants.Html.shutdown);
+                pageData = shutdownPage.html;
+            }
+            else{                
                 PageData collectionPage = new PageData(fileLoc: Constants.Html.collectionBase);
                 pageData = collectionPage.html;
+            }
         }
     }
 
@@ -36,7 +41,7 @@ class Server{
             HttpListenerRequest request = listenerContext.Request;
             HttpListenerResponse response = listenerContext.Response;
             HandlePageData(request);
-            if ((request.HttpMethod == "POST") && (request.Url?.AbsolutePath == "/shutdown")){
+            if ((request.HttpMethod == "POST") && (request.Url?.AbsolutePath == Constants.Html.shutdownCommand)){
                 Console.WriteLine("Shutdown requested.");
                 runServer = false;
             }
