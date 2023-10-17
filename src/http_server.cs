@@ -23,13 +23,15 @@ class Server{
                 pageData = indexData;
         }
         else{
-            if(request.Url?.AbsolutePath == Constants.Html.shutdownCommand){                
-                PageData shutdownPage = new PageData(fileLoc: Constants.Html.shutdown);
-                pageData = shutdownPage.html;
+            if(request.Url?.AbsolutePath == Constants.Html.shutdownCommand){     
+                string fileLoc = Constants.Html.shutdown;
+                HtmlReader shutdownReader = new HtmlReader(fileLoc); 
+                pageData = shutdownReader.html;
             }
-            else{                
-                PageData collectionPage = new PageData(fileLoc: Constants.Html.collectionBase);
-                pageData = collectionPage.html;
+            else{     
+                string fileLoc = Constants.Html.collectionBase;
+                HtmlReader placeholderReader = new HtmlReader(fileLoc); 
+                pageData = placeholderReader.html;
             }
         }
     }

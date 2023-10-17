@@ -1,4 +1,5 @@
 using System.Net.NetworkInformation;
+using OneOf;
 
 namespace DmgScy;
 
@@ -31,8 +32,8 @@ static class Constants {
         public static string indexBase = "src/pagedata/index_base.html";
         public static string collectionBase = "src/pagedata/collection_base.html";
         public static string index = "src/pagedata/index.html";
+        public static string collectionLast = "src/pagedata/last_collection.html";
         public static string shutdown = "src/pagedata/shutdown.html";
-        public static string collection = "src/pagedata/collection.html";
         public static string shutdownCommand = "/shutdown";
         public static string insertionMarker = "##TableMarker##";
     }

@@ -11,6 +11,8 @@
     <PackageReference Include="HtmlAgilityPack.CssSelectors" Version="1.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0" />
+    <PackageReference Include="OneOf" Version="3.0.263" />
+    <PackageReference Include="OneOf.SourceGenerator" Version="3.0.263" />
   </ItemGroup>
 
 </Project>

@@ -3,20 +3,31 @@ using System.Text;
 using System.IO;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Linq.Expressions;
+using OneOf;
+using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace DmgScy;
 
-public class PageData {
+public class HtmlReader {
     public string fileLoc;
     public string html;
 
-    public PageData(string fileLoc){
+    public HtmlReader(string fileLoc){
         this.fileLoc = fileLoc;
         this.html = String.Concat(File.ReadAllLines(fileLoc));
     }
+}
 
-    private void HandleTableColumns(DataTable dataTable, StringBuilder stringBuilder, DataRow row, string tableHeader){
-        if(tableHeader == "Bands"){
+public class HtmlWriter: HtmlReader {
+    DataServiceManager dataServiceManager;
+
+    public HtmlWriter(DataServiceManager dataServiceManager, string fileLoc): base(fileLoc){
+        this.dataServiceManager = dataServiceManager;
+    }
+
+    private void HandleTableColumns(StringBuilder stringBuilder, DataServiceManager dataServiceManager, DataRow row){
+        if(dataServiceManager.dataService.IsT0){
             object bandNameObj = row["name"];
             string bandName = $"{bandNameObj}";
             StringBuilder urlString = new StringBuilder(bandName);
@@ -27,27 +38,25 @@ public class PageData {
         } 
     }
 
-    private string ConvertTableToHTML(DataTable dataTable, string tableHeader){
+    public string ConvertTableToHTML(DataTable dataTable){
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("\n<table>");
         foreach(DataRow row in dataTable.Rows){
             stringBuilder.AppendLine("<tr>");
-            HandleTableColumns(dataTable, stringBuilder, row, tableHeader);
+            HandleTableColumns(stringBuilder, dataServiceManager, row);
             stringBuilder.AppendLine("\n</tr>");
         }
         stringBuilder.AppendLine("</table>");
         return stringBuilder.ToString();
     }
 
-    private string InsertTableIntoHTML(DataTable dataTable, string tableHeader){
-        string tableElement = ConvertTableToHTML(dataTable, tableHeader);
-        string newHtml = html.Replace(Constants.Html.insertionMarker, tableElement);
+    public string InsertTableIntoHTML(string tableAsHtml){
+        string newHtml = html.Replace(Constants.Html.insertionMarker, tableAsHtml);
         return newHtml;
     }
 
-    public void WriteNewHTML(string outfileLoc, DataTable dataTable, string tableHeader){
-        string outContent = InsertTableIntoHTML(dataTable, tableHeader);
-        File.WriteAllText(outfileLoc, outContent);
+    public void WriteNewHTML(string outfileLoc, string outHtml){
+        File.WriteAllText(outfileLoc, outHtml);
     }
 }
 
