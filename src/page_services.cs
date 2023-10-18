@@ -57,15 +57,17 @@ class PageBuilder{
     public PageType pageType;
     private DataServiceManager dataServiceManager;
     private HtmlWriter htmlWriter;
+    public string pageName;
 
     public PageBuilder(PageType pageType, string pageName){
+        this.pageName = pageName;
         this.pageType = pageType;
-        this.dataServiceManager = InstantiateDataServiceManager(pageName);
+        this.dataServiceManager = InstantiateDataServiceManager();
         this.htmlWriter = InstantiateHtmlWriter();
         this.pageData = new PageData(dataServiceManager: dataServiceManager, htmlWriter: htmlWriter);
     }
 
-    private DataServiceManager InstantiateDataServiceManager(string pageName){
+    private DataServiceManager InstantiateDataServiceManager(){
         string tableName = StringCleaner.EraseIllegalChars(pageName);
         if(pageType == PageType.INDEX){
             return new DataServiceManager(new BandService(tableName: tableName));
@@ -77,10 +79,10 @@ class PageBuilder{
 
     private HtmlWriter InstantiateHtmlWriter(){
         if(pageType == PageType.INDEX){
-            return new HtmlWriter(fileLoc: Constants.Html.indexBase, dataServiceManager: dataServiceManager);
+            return new HtmlWriter(fileLoc: Constants.Html.indexBase, dataServiceManager: dataServiceManager, header: pageName);
         }
         else{
-            return new HtmlWriter(fileLoc: Constants.Html.collectionBase, dataServiceManager: dataServiceManager);
+            return new HtmlWriter(fileLoc: Constants.Html.collectionBase, dataServiceManager: dataServiceManager, header: pageName);
         }
     }
 

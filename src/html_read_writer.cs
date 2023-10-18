@@ -22,9 +22,11 @@ public class HtmlReader {
 
 public class HtmlWriter: HtmlReader {
     DataServiceManager dataServiceManager;
+    string header;
 
-    public HtmlWriter(DataServiceManager dataServiceManager, string fileLoc): base(fileLoc){
+    public HtmlWriter(DataServiceManager dataServiceManager, string fileLoc, string header): base(fileLoc){
         this.dataServiceManager = dataServiceManager;
+        this.header = header;        
     }
 
     private void HandleTableColumns(StringBuilder stringBuilder, DataServiceManager dataServiceManager, DataRow row){
@@ -59,6 +61,7 @@ public class HtmlWriter: HtmlReader {
 
     public string InsertTableIntoHTML(string tableAsHtml){
         string newHtml = html.Replace(Constants.Html.tableMarker, tableAsHtml);
+        newHtml = newHtml.Replace(Constants.Html.titleMarker, header);
         return newHtml;
     }
 
