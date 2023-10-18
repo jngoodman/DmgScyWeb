@@ -1,5 +1,6 @@
 dmgscy.db
 src/pagedata/index.html
+src/pagedata/last_collection.html
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

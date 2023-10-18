@@ -1,12 +1,12 @@
 using System.Data;
+using System.Text;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using OneOf.Types;
 
 namespace DmgScy;
 public class DataServiceManager{
     public BandOrCollectionService  dataService;
-    public DataTarget dataTarget;
-
     public DataServiceManager(BandOrCollectionService dataService){
         this.dataService = dataService;
     }
@@ -34,26 +34,40 @@ public class DataServiceManager{
         }
     }
 
-    public DataTable? SelectTable(){
-        DataTable? returnValue = null;
+    public DataTable SelectTable(){
+        DataTable dataTable = new DataTable();
         try{
             if(dataService.IsT0){
-                returnValue = dataService.AsT0.DatabaseSelect();
+                dataTable = dataService.AsT0.DatabaseSelect();
             }
             else if(dataService.IsT1){
-                returnValue = dataService.AsT1.DatabaseSelect();
+                dataTable = dataService.AsT1.DatabaseSelect();
             }
         }
         catch(SqliteException){
             Console.WriteLine("Sqlite error. Check table exists. Returning null.");
         }
-        return returnValue;
+        return dataTable;
     }
 
-    public DataTable? GetDataTable(BandOrCollectionList insertList){
+    public DataTable GetDataTable(BandOrCollectionList insertList){
         CreateTable();
         FillTable(insertList);
         return SelectTable();
     } 
 }
 
+public static class StringCleaner{
+
+    public static string EraseIllegalChars(string inputString){
+        inputString = inputString.ToLower();
+        List<string> outputList = new List<string>();
+        foreach(char character in inputString){
+            if(Constants.legalTableCharacters.Contains(character)){
+                outputList.Add(character.ToString());
+            }
+        }
+        string outputString = string.Join("", outputList);
+        return outputString;        
+    }
+}

@@ -17,31 +17,30 @@ public class HandleDatabase{
         this.dbConnection = new SqliteConnection(connectionString);
     }
         
-    private DataTable? ExecuteCommand(SqliteCommand command, bool returnTable = false){
+    private DataTable ExecuteCommand(SqliteCommand command, bool returnTable = false){
+        DataTable returnValue = new DataTable();
         if(!returnTable){
             command.ExecuteNonQuery();
-            return null;
+            return returnValue;
         }       
-        DataTable dataTable = new DataTable();
         SqliteDataReader reader = command.ExecuteReader();
         for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
             DataColumn column = new DataColumn(reader.GetName(columnNumber));
-            dataTable.Columns.Add(column);
+            returnValue.Columns.Add(column);
             }
         int rowNumber = 0;
         while(reader.Read()){
-            DataRow row = dataTable.NewRow();
-            dataTable.Rows.Add(row);
+            DataRow row = returnValue.NewRow();
+            returnValue.Rows.Add(row);
             for(int columnNumber = 0; columnNumber < reader.FieldCount; columnNumber++){
-                dataTable.Rows[rowNumber][columnNumber] = reader.GetValue(columnNumber);
+                returnValue.Rows[rowNumber][columnNumber] = reader.GetValue(columnNumber);
             }
             rowNumber++;
         }
-        return dataTable;
+        return returnValue;
     }
 
-    public DataTable? RunQuery(string commandString, List<SqliteParameter>? parameters = null, bool returnTable = false){
-        //Will return a DataTable ready for Html injection only if RETURN is a specified option. See HandleDatabase.ExecuteCommand();
+    public DataTable RunQuery(string commandString, List<SqliteParameter>? parameters = null, bool returnTable = false){
         SqliteCommand command = new SqliteCommand(commandString, dbConnection);
         if(parameters != null){
             foreach(SqliteParameter parameter in parameters){

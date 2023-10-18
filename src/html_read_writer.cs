@@ -1,5 +1,6 @@
 using System.Data;
 using System.Text;
+using System.Web;
 using System.IO;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Linq.Expressions;
@@ -30,11 +31,17 @@ public class HtmlWriter: HtmlReader {
         if(dataServiceManager.dataService.IsT0){
             object bandNameObj = row["name"];
             string bandName = $"{bandNameObj}";
-            StringBuilder urlString = new StringBuilder(bandName);
-            urlString.Replace(" ", "");
-            urlString.Replace("/", "");
-            string bandNameUrl = urlString.ToString().ToLower();
+            string bandNameUrl = HttpUtility.UrlEncode(bandName);
             stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
+        }
+        if(dataServiceManager.dataService.IsT1){
+            object itemName = row["name"];
+            object itemUrl = row["url"];
+            object itemPrice = row["price"];
+            object itemImage = row["image"];
+            stringBuilder.Append($"<td><a href = \"{itemUrl}\">{itemName}</a></td>");
+            stringBuilder.Append($"<td>{itemPrice}</td>");
+            stringBuilder.Append($"<td>{itemImage}</td>");
         } 
     }
 
@@ -51,7 +58,7 @@ public class HtmlWriter: HtmlReader {
     }
 
     public string InsertTableIntoHTML(string tableAsHtml){
-        string newHtml = html.Replace(Constants.Html.insertionMarker, tableAsHtml);
+        string newHtml = html.Replace(Constants.Html.tableMarker, tableAsHtml);
         return newHtml;
     }
 
