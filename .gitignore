@@ -1,6 +1,6 @@
 dmgscy.db
-src/pagedata/index.html
-src/pagedata/last_collection.html
+pagedata/index.html
+pagedata/last_collection.html
 *.so
 bin/
 obj/
