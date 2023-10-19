@@ -77,7 +77,7 @@ public class CollectionService: IDataService {
 }
 
 public class DataServiceManager{
-    public BandOrCollectionService  dataService;
+    public BandOrCollectionService dataService;
     public DataServiceManager(BandOrCollectionService dataService){
         this.dataService = dataService;
     }
