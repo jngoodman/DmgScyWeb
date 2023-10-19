@@ -6,8 +6,11 @@ namespace DmgScy;
 public static class Run{
     
     public static void Main(){
+        Directory.CreateDirectory(Constants.imageDir);
+        if(DataCleaner.ShouldRefresh()){
+            DataCleaner.ClearTempData();
+        }
         Server server = new Server(Constants.localhost);
-        Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
         server.listener.Start();
         Console.WriteLine("Listening for connections on {0}", Constants.localhost);
         server.HandleIncomingConnections().GetAwaiter().GetResult();

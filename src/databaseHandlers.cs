@@ -13,7 +13,7 @@ public class HandleDatabase{
     SqliteConnection dbConnection;
 
     public HandleDatabase(){
-        this.connectionString = Constants.Sql.dataSource;
+        this.connectionString = $"Data Source={Constants.Sql.dataSource}";
         this.dbConnection = new SqliteConnection(connectionString);
     }
         
@@ -51,5 +51,45 @@ public class HandleDatabase{
         DataTable? dataTable = ExecuteCommand(command, returnTable);
         dbConnection.Close();
         return dataTable;
+    }
+}
+
+public static class TableExists{
+
+    public static bool Check(string tableName){
+        HandleDatabase databaseHandler = new HandleDatabase();
+        try {
+            string query = Constants.Sql.select.Replace("{name}", tableName);
+            databaseHandler.RunQuery(query);
+            return true;
+        }
+        catch(SqliteException){
+            return false;
+        }
+    }
+}
+
+public static class DataCleaner{
+
+    public static bool ShouldRefresh(){
+        DateTime creationTime = File.GetCreationTime(Constants.Sql.dataSource);
+        DateTime currentTime = DateTime.Now;
+        TimeSpan span = currentTime.Subtract(creationTime);
+        if(span.Days >= Constants.refreshDays){
+            return true;
+        }
+        return false;
+    }
+
+    public static void ClearTempData(){
+        File.Delete(Constants.Sql.dataSource);
+        DirectoryInfo directory = new DirectoryInfo(Constants.imageDir);
+        foreach(FileInfo file in directory.GetFiles()){
+            file.Delete();
+        }
+        foreach(DirectoryInfo subdirectory in directory.GetDirectories()){
+            subdirectory.Delete(true);
+        }
+        Directory.Delete(Constants.imageDir);
     }
 }
