@@ -12,28 +12,29 @@ namespace DmgScy;
 class PageData{
     public HtmlWriter htmlWriter;
     public DataServiceManager dataServiceManager;
-    public BandOrCollectionList? dataList;
+    public DataTable? dataTable;
 
     public PageData(HtmlWriter htmlWriter, DataServiceManager dataServiceManager){
         this.htmlWriter = htmlWriter;
         this.dataServiceManager = dataServiceManager;
     }
 
-    public BandOrCollectionList ScrapeWebData(string url, string cssSelector){
+    public void ScrapeWebData(string url, string cssSelector){
         GetHTML getHtml = new GetHTML(url);
         IList<HtmlNode> nodes = getHtml.ReturnNodes(cssSelector);
         HtmlParser parseHtml = new HtmlParser(nodes);
+        BandOrCollectionList dataList;
         if(dataServiceManager.dataService.IsT0){
             dataList = parseHtml.ParseBands();
         }
         else{
             dataList = parseHtml.ParseCollection();
-        }    
-        return dataList;    
+        }
+        dataServiceManager.GenDataTable(dataList);  
     }
 
-    public void CreatePageData(BandOrCollectionList insertList){
-        DataTable dataTable = dataServiceManager.GetDataTable(insertList);
+    public DataTable? CreatePageData(){
+        dataTable = dataServiceManager.SelectTable();
         if(dataTable != null){
             string dataTableHtml = htmlWriter.ConvertTableToHTML(dataTable);
             string newHtml = htmlWriter.InsertTableIntoHTML(dataTableHtml);
@@ -44,6 +45,7 @@ class PageData{
                 htmlWriter.WriteNewHTML(outfileLoc: Constants.Html.collectionLast, newHtml);
             }
         }
+        return dataTable;
     }
 }
 
@@ -68,7 +70,7 @@ class PageBuilder{
     }
 
     private DataServiceManager InstantiateDataServiceManager(){
-        string tableName = StringCleaner.EraseIllegalChars(pageName);
+        string tableName = pageName;
         if(pageType == PageType.INDEX){
             return new DataServiceManager(new BandService(tableName: tableName));
         }
@@ -86,14 +88,15 @@ class PageBuilder{
         }
     }
 
-    public void Build(string sourceUrl){
-        if(pageType == PageType.INDEX){
-            BandOrCollectionList bandList = pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.band_css_selector);
-            pageData.CreatePageData(bandList);
+    public void Build(string sourceUrl, bool fromLocal = false){
+        if(!fromLocal){
+            if(pageType == PageType.INDEX){
+                pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.band_css_selector);
+            }
+            else if(pageType == PageType.COLLECTION){
+                pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.collection_css_selector);
+            }
         }
-        else if(pageType == PageType.COLLECTION){
-            BandOrCollectionList itemList = pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.collection_css_selector);
-            pageData.CreatePageData(itemList);
-        }
+        pageData.CreatePageData();
     }
 }

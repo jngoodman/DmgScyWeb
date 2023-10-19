@@ -1,6 +1,8 @@
-namespace DmgScy;
 using OneOf;
 using HtmlAgilityPack;
+using System.Drawing;
+
+namespace DmgScy;
 
 class HtmlParser{
     public IList<HtmlNode> nodes;
@@ -30,7 +32,10 @@ class HtmlParser{
             HtmlNode price_subnode = GetHTML.ReturnSubNode(node, Constants.coll_price_selector);
             string price = GetHTML.ReturnInnerText(price_subnode);
             HtmlNode image_subnode = GetHTML.ReturnSubNode(node, Constants.coll_image_selector);
-            string image = GetHTML.ReturnValue(image_subnode, Constants.coll_image_attribute);
+            string imageSource = GetHTML.ReturnValue(image_subnode, Constants.coll_image_attribute);
+            ImageDownloader imageDownloader = new ImageDownloader(imageSource, name);
+            string imagePath = imageDownloader.imagePath;
+            string image = JpegConverter.ToBase64(Image.FromFile(imagePath));
             Collection collection = new Collection { name = name, url = $"{Constants.base_url}{url}", image = image, price = price};
             itemList.Add(collection);
         }

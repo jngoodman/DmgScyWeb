@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Text;
 using System.Web;
+using System.Data;
 
 namespace DmgScy;
 
@@ -9,22 +10,26 @@ class Server{
     public HttpListener listener;
     public string url;
     public string? currPage;
-    private List<Band>? bands;
+    private List<Band> bands;
 
     public Server(string url){
         this.url = url;
         this.currPage = null;
-        this.bands = null;
+        this.bands = new List<Band>();
         this.listener = new HttpListener();
         listener.Prefixes.Add(url);
     }
 
     private void ServeIndex(){
-        PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: "Bands");
-        pageBuilder.Build(sourceUrl: Constants.all_bands_url);
-        BandOrCollectionList? dataList = pageBuilder.pageData.dataList;
-        if(dataList != null){
-            bands = dataList.AsT0;
+        PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: "bands");
+        pageBuilder.Build(sourceUrl: Constants.all_bands_url, TableExists.Check("bands"));
+        DataTable? bandTable = pageBuilder.pageData.dataTable;
+        if(bandTable != null){
+            foreach(DataRow row in bandTable.Rows){
+                string bandName = $"{row["name"]}";
+                string bandUrl = $"{row["url"]}";
+                bands.Add(new Band(name: bandName, url: bandUrl));
+            }
         }
         HtmlReader pageReader = new HtmlReader(Constants.Html.index);
         currPage = pageReader.html;
@@ -32,8 +37,9 @@ class Server{
 
     private void ServeCollection(string sourceUrl, string sourceName){
         if(sourceUrl != ""){
-            PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: sourceName);
-            pageBuilder.Build(sourceUrl: sourceUrl);
+            string pageName = StringCleaner.EraseIllegalChars(sourceName);
+            PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: pageName);
+            pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(pageName));
             HtmlReader pageReader = new HtmlReader(Constants.Html.collectionLast);
             currPage = pageReader.html;
         }
@@ -99,7 +105,6 @@ class Server{
                 if(currPage != null){
                     byte[] data = Encoding.UTF8.GetBytes(currPage);
                     response.ContentType = "text/html";
-                    response.ContentEncoding = Encoding.UTF8;
                     response.ContentLength64 = data.LongLength;
                     await response.OutputStream.WriteAsync(data, 0, data.Length);
                 }

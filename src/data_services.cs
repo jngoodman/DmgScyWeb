@@ -25,7 +25,7 @@ public class BandService: IDataService {
     }
 
     public DataTable DatabaseSelect(){
-        string query = Constants.Sql.selectBands.Replace("{indexName}", tableName);
+        string query = Constants.Sql.select.Replace("{name}", tableName);
         DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
         return dataTable;
     }
@@ -57,7 +57,7 @@ public class CollectionService: IDataService {
     }
 
     public DataTable DatabaseSelect(){
-        string query = Constants.Sql.selectCollection.Replace("{collectionName}", tableName);
+        string query = Constants.Sql.select.Replace("{name}", tableName);
         DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
         return dataTable;
     }

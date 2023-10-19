@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using OneOf;
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+using System.Drawing;
 
 namespace DmgScy;
 
@@ -31,31 +32,34 @@ public class HtmlWriter: HtmlReader {
 
     private void HandleTableColumns(StringBuilder stringBuilder, DataServiceManager dataServiceManager, DataRow row){
         if(dataServiceManager.dataService.IsT0){
+            stringBuilder.AppendLine("<tr>");
             object bandNameObj = row["name"];
             string bandName = $"{bandNameObj}";
             string bandNameUrl = HttpUtility.UrlEncode(bandName);
             stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
+            stringBuilder.AppendLine("\n</tr>");
         }
         if(dataServiceManager.dataService.IsT1){
             object itemName = row["name"];
             object itemUrl = row["url"];
             object itemPrice = row["price"];
             object itemImage = row["image"];
-            stringBuilder.Append($"<td><a href = \"{itemUrl}\">{itemName}</a></td>");
-            stringBuilder.Append($"<td>{itemPrice}</td>");
-            stringBuilder.Append($"<td>{itemImage}</td>");
+            stringBuilder.AppendLine($"<table style=\"float: left;\"><td><a href = \"{itemUrl}\"><img src=\"data: image / png; base64, {itemImage} \" width=\"206\" height=\"300\" alt=\"{itemName}\"></a></td>");
+            stringBuilder.AppendLine($"<tr><th>{itemPrice}</th></tr></table>");
         } 
     }
 
     public string ConvertTableToHTML(DataTable dataTable){
         StringBuilder stringBuilder = new StringBuilder();
+        if(dataServiceManager.dataService.IsT0){
         stringBuilder.AppendLine("\n<table>");
-        foreach(DataRow row in dataTable.Rows){
-            stringBuilder.AppendLine("<tr>");
-            HandleTableColumns(stringBuilder, dataServiceManager, row);
-            stringBuilder.AppendLine("\n</tr>");
         }
+        foreach(DataRow row in dataTable.Rows){
+            HandleTableColumns(stringBuilder, dataServiceManager, row);
+        }
+        if(dataServiceManager.dataService.IsT0){
         stringBuilder.AppendLine("</table>");
+        }
         return stringBuilder.ToString();
     }
 
