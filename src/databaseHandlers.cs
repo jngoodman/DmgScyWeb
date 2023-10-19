@@ -83,13 +83,5 @@ public static class DataCleaner{
 
     public static void ClearTempData(){
         File.Delete(Constants.Sql.dataSource);
-        DirectoryInfo directory = new DirectoryInfo(Constants.imageDir);
-        foreach(FileInfo file in directory.GetFiles()){
-            file.Delete();
-        }
-        foreach(DirectoryInfo subdirectory in directory.GetDirectories()){
-            subdirectory.Delete(true);
-        }
-        Directory.Delete(Constants.imageDir);
     }
 }

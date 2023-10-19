@@ -5,8 +5,7 @@ namespace DmgScy;
 
 public static class Run{
     
-    public static void Main(){
-        Directory.CreateDirectory(Constants.imageDir);
+    public static void Main(){        
         if(DataCleaner.ShouldRefresh()){
             DataCleaner.ClearTempData();
         }

@@ -16,14 +16,10 @@ static class Constants {
     public static string url_attribute = "href";
     public static string localhost = "http://localhost:8000/";
     public static string legalTableCharacters = "abcdefghijklmnopqrstuvwxyz";
-    public static string imageDir = "temp";
-    public static string imageExtension = $".jpg";
     public static string imageRightPartEncoder = "?v=";
     public static int refreshDays = 7;
     
     public static class Sql {
-        public static string colIdentifierBandName = "@name";
-        public static string colIdentifierBandUrl = "@url";
         public static string dataSource = "src/dmgscy.db";
         public static string createBands = "CREATE TABLE IF NOT EXISTS {indexName} (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
         public static string addBands = "INSERT OR IGNORE INTO {indexName} (name, url) VALUES (@name, @url);";
@@ -39,7 +35,6 @@ static class Constants {
         public static string collectionLast = "pagedata/last_collection.html";
         public static string shutdown = "pagedata/shutdown.html";
         public static string shutdownCommand = "/shutdown";
-        public static string clearDataCommand = "/cleardata";
         public static string tableMarker = "##TableMarker##";
         public static string titleMarker = "##TitleMarker##";
     }

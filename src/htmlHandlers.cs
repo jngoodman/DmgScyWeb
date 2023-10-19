@@ -63,9 +63,8 @@ class HtmlParser{
             string price = GetHTML.ReturnInnerText(price_subnode);
             HtmlNode image_subnode = GetHTML.ReturnSubNode(node, Constants.coll_image_selector);
             string imageSource = GetHTML.ReturnValue(image_subnode, Constants.coll_image_attribute);
-            ImageDownloader imageDownloader = new ImageDownloader(imageSource, name);
-            string imagePath = imageDownloader.imagePath;
-            string image = JpegConverter.ToBase64(Image.FromFile(imagePath));
+            UrlToImage imageConverter = new UrlToImage(imageSource);
+            string image = imageConverter.image;
             Collection collection = new Collection { name = name, url = $"{Constants.base_url}{url}", image = image, price = price};
             itemList.Add(collection);
         }

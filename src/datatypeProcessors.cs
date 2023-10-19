@@ -17,44 +17,23 @@ public static class StringCleaner{
     }
 }
 
-public static class JpegConverter{
-    public static string ToBase64(Image image){
-        MemoryStream stream = new MemoryStream();
-        image.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
-        byte[] imageBytes = stream.ToArray();
-        string imageBase64 = Convert.ToBase64String(imageBytes);
-        return imageBase64;
-    }
-}
-
-public class ImageDownloader{
+public class UrlToImage{
     public string source;
-    public string imagePath{get; set;}
+    public string image {get; set;}
     
-    public ImageDownloader(string url, string imageName){
-        this.imagePath = GetPath(imageName);       
+    public UrlToImage(string url){     
         this.source = url.Split(Constants.imageRightPartEncoder)[0];
         if(!source.StartsWith("https")){
             source = "https:" + source;
-        }        
-        try{
-            Download().Wait();
         }
-        catch{
-            //Sometimes, Task.Wait() throws an error, but if you just wait long enough it works!
-            Console.WriteLine("Image downloading error.");
-        }
+        Task<byte[]> getBytes = GetByteArray();
+        getBytes.Wait();
+        byte[] imageBytes = getBytes.Result;
+        this.image = Convert.ToBase64String(imageBytes);
     }
 
-    private string GetPath(string imageName){
-        string cleanName = StringCleaner.EraseIllegalChars(imageName);
-        string fileName = $"{cleanName}{Constants.imageExtension}";
-        return Constants.imageDir + $"/{fileName}";   
-    }
-
-    private async Task Download(){ 
+    private async Task<byte[]> GetByteArray(){ 
         HttpClient client = new HttpClient();
-        byte[] imageBytes = await client.GetByteArrayAsync(source);
-        await File.WriteAllBytesAsync(imagePath, imageBytes);
+        return await client.GetByteArrayAsync(source);
     }
 }
