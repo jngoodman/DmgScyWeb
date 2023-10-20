@@ -36,7 +36,7 @@ class Server{
     }
 
     private void ServeCollection(string sourceUrl, string sourceName){
-        if(sourceUrl != ""){
+        if(sourceUrl != null){
             string pageName = StringCleaner.EraseIllegalChars(sourceName);
             PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: pageName);
             pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(pageName, Constants.Sql.dataSource));
@@ -50,24 +50,24 @@ class Server{
         currPage = shutdownReader.html;
     }
 
-    private void AddToFavourites(){
-        
-        ServeIndex();
+    private void AddToFavourites(string sourceUrl, string sourceName){
+        if(sourceUrl != null){
+            BandService favouritesService = new BandService(dataBase: Constants.Sql.dataSource, tableName: "favourites");
+            favouritesService.DatabaseCreate();
+            Band band = new Band(name: sourceName, url: sourceUrl);
+            favouritesService.DatabaseInsertSingle(band);
+            ServeIndex();
+        }
     }
 
-    private string PullSourceUrl(HttpListenerRequest request){
+    private string PullSourceUrl(string sourceName){
         string sourceUrl = "";
-        string? partialUrl = request.Url?.AbsolutePath;
-        if(partialUrl != null){
-            string bandName = HttpUtility.UrlDecode(partialUrl);
-            bandName = bandName.TrimStart('/');
-            if(bands != null){
-                Band? band = bands.Find(x => x.name == bandName);
-                if(band != null){
-                    sourceUrl = band.url;
+        if(bands != null){
+            Band? band = bands.Find(x => x.name == sourceName);
+            if(band != null){
+                sourceUrl = band.url;
                 }
             }
-        }
         return sourceUrl;        
     }
 
@@ -89,9 +89,16 @@ class Server{
             ServeShutdown();
         }
         else{
-            string sourceUrl = PullSourceUrl(request); 
             string sourceName = PullSourceName(request);
-            ServeCollection(sourceUrl, sourceName);    
+            if(sourceName.Contains(Constants.Html.favMarkerUrl)){
+                sourceName = sourceName.Replace(Constants.Html.favMarkerUrl, "");
+                string sourceUrl = PullSourceUrl(sourceName);
+                AddToFavourites(sourceUrl, sourceName);
+            }
+            else{
+                string sourceUrl = PullSourceUrl(sourceName);
+                ServeCollection(sourceUrl, sourceName);
+            }
         }
     }
 

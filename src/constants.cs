@@ -21,7 +21,6 @@ static class Constants {
     
     public static class Sql {
         public static string dataSource = "src/dmgscy.db";
-        public static string faveSource = "src/favourites.db";
         public static string createBands = "CREATE TABLE IF NOT EXISTS {tableName} (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
         public static string addBands = "INSERT OR IGNORE INTO {tableName} (name, url) VALUES (@name, @url);";
         public static string select = "SELECT * FROM {tableName};";
@@ -36,8 +35,10 @@ static class Constants {
         public static string collectionLast = "pagedata/last_collection.html";
         public static string shutdown = "pagedata/shutdown.html";
         public static string shutdownCommand = "/shutdown";
+        public static string favCommand = "/favourite";
         public static string tableMarker = "##TableMarker##";
         public static string titleMarker = "##TitleMarker##";
+        public static string favMarkerUrl = "&favourite&";
     }
 
     public static string favouriteIconBase64 = "iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAE/SURBVDhPrZPRagIxEEVntW4LtuBL34T+Qv//b9qXgkihBUFd1/TeZKJJTGIKe8CdJDO5mWRG+QcrtZNi1N5lpnZSqqJdpwNkaT6ctd87VEVNIDGMOmjgmksZl+UjfgdseLNr1X1Nb3o643NU20DuxPDdjsiylzlGvL5azTYk0uEkenwtSJER2c6T+6WH+BPsu+32Iv1CZPGAFb8xVyBmTHDAcMJ1BpHl00U8aBpfEAoisBmNDwsYvQVwwsyypSgal3ZEKkqcMD21Vld/KkhyLdUx8GuDUc5LsE5/TpCUtrliVaj5i6Ivz/j46zMXVtznhHXrL5ATNeYT/8oeIxXbfmO4dtaL0689ffPyqaibM4yi7AD06es7F6WzFvOfX1j6r0Q6N48MXPWBFoKEcTazJCbSyYqqJTm/pzVuCkT+AF6CVURB95a8AAAAAElFTkSuQmCC";

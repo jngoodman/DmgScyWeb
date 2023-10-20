@@ -97,7 +97,7 @@ public class HtmlWriter: HtmlReader {
             object bandNameObj = row["name"];
             string bandName = $"{bandNameObj}";
             string bandNameUrl = HttpUtility.UrlEncode(bandName);
-            stringBuilder.Append($"<td><img id=\"icon\" onclick=\"this.classList.toggle('selected')\" src=\"data: image / png; base64, {Constants.favouriteIconBase64} \" width=\"15\" height=\"15\"></td>");
+            stringBuilder.Append($"<td><a href = \"{Constants.Html.favMarkerUrl}{bandNameUrl}\"><img id=\"icon\" onclick=\"this.classList.toggle('selected')\" src=\"data: image / png; base64, {Constants.favouriteIconBase64} \" width=\"15\" height=\"15\"></a></td>");
             stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
             stringBuilder.AppendLine("\n</tr>");
         }

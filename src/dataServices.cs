@@ -39,8 +39,17 @@ public class BandService: IDataService {
             };
             databaseHandler.RunQuery(query, parameters: parameterList);
         }
-    }    
-}
+    }
+
+    public void DatabaseInsertSingle(Band band){
+        string query = Constants.Sql.addBands.Replace("{tableName}", tableName);
+        List<SqliteParameter> parameterList = new List<SqliteParameter>(){
+            new SqliteParameter("@name", band.name),
+            new SqliteParameter("@url", band.url)
+        };
+        databaseHandler.RunQuery(query, parameters: parameterList);
+    }
+}  
 
 public class CollectionService: IDataService {
     public HandleDatabase databaseHandler {get; set; }
