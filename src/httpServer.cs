@@ -22,7 +22,7 @@ class Server{
 
     private void ServeIndex(){
         PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: "bands");
-        pageBuilder.Build(sourceUrl: Constants.all_bands_url, TableExists.Check("bands"));
+        pageBuilder.Build(sourceUrl: Constants.all_bands_url, TableExists.Check("bands", Constants.Sql.dataSource));
         DataTable? bandTable = pageBuilder.pageData.dataTable;
         if(bandTable != null){
             foreach(DataRow row in bandTable.Rows){
@@ -39,7 +39,7 @@ class Server{
         if(sourceUrl != ""){
             string pageName = StringCleaner.EraseIllegalChars(sourceName);
             PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: pageName);
-            pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(pageName));
+            pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(pageName, Constants.Sql.dataSource));
             HtmlReader pageReader = new HtmlReader(Constants.Html.collectionLast);
             currPage = pageReader.html;
         }
@@ -48,6 +48,11 @@ class Server{
     private void ServeShutdown(){
         HtmlReader shutdownReader = new HtmlReader(Constants.Html.shutdown); 
         currPage = shutdownReader.html;
+    }
+
+    private void AddToFavourites(){
+        
+        ServeIndex();
     }
 
     private string PullSourceUrl(HttpListenerRequest request){

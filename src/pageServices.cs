@@ -72,10 +72,10 @@ class PageBuilder{
     private DataServiceManager InstantiateDataServiceManager(){
         string tableName = pageName;
         if(pageType == PageType.INDEX){
-            return new DataServiceManager(new BandService(tableName: tableName));
+            return new DataServiceManager(new BandService(tableName: tableName, dataBase: Constants.Sql.dataSource));
         }
         else{
-            return new DataServiceManager(new CollectionService(tableName: tableName));
+            return new DataServiceManager(new CollectionService(tableName: tableName, dataBase: Constants.Sql.dataSource));
         }
     }
 

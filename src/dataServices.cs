@@ -14,24 +14,24 @@ public class BandService: IDataService {
     public HandleDatabase databaseHandler {get; set; }
     public string tableName {get; set; }
 
-    public BandService(string tableName){
-        this.databaseHandler = new HandleDatabase(); 
+    public BandService(string tableName, string dataBase){
+        this.databaseHandler = new HandleDatabase(dataBase); 
         this.tableName = tableName;            
     }    
 
     public void DatabaseCreate(){
-        string query = Constants.Sql.createBands.Replace("{indexName}", tableName);
+        string query = Constants.Sql.createBands.Replace("{tableName}", tableName);
         databaseHandler.RunQuery(query);
     }
 
     public DataTable DatabaseSelect(){
-        string query = Constants.Sql.select.Replace("{name}", tableName);
+        string query = Constants.Sql.select.Replace("{tableName}", tableName);
         DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
         return dataTable;
     }
 
     public void DatabaseInsert(List<Band> bandList){
-        string query = Constants.Sql.addBands.Replace("{indexName}", tableName);
+        string query = Constants.Sql.addBands.Replace("{tableName}", tableName);
         foreach(Band band in bandList){
             List<SqliteParameter> parameterList = new List<SqliteParameter>(){
                 new SqliteParameter("@name", band.name),
@@ -46,18 +46,18 @@ public class CollectionService: IDataService {
     public HandleDatabase databaseHandler {get; set; }
     public string tableName {get; set; }
 
-    public CollectionService(string tableName){
-        this.databaseHandler = new HandleDatabase();
+    public CollectionService(string tableName, string dataBase){
+        this.databaseHandler = new HandleDatabase(dataBase);
         this.tableName = tableName;
     }    
 
     public void DatabaseCreate(){
-        string query = Constants.Sql.createCollection.Replace("{collectionName}", tableName);
+        string query = Constants.Sql.createCollection.Replace("{tableName}", tableName);
         databaseHandler.RunQuery(query);
     }
 
     public DataTable DatabaseSelect(){
-        string query = Constants.Sql.select.Replace("{name}", tableName);
+        string query = Constants.Sql.select.Replace("{tableName}", tableName);
         DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
         return dataTable;
     }
@@ -70,7 +70,7 @@ public class CollectionService: IDataService {
                 new SqliteParameter("@price", item.price),
                 new SqliteParameter("@image", item.image)
             };
-        string query = Constants.Sql.addCollection.Replace("{collectionName}", tableName);
+        string query = Constants.Sql.addCollection.Replace("{tableName}", tableName);
         databaseHandler.RunQuery(query, parameters: parameterList);
         }
     }      

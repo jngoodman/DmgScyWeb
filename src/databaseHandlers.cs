@@ -12,8 +12,8 @@ public class HandleDatabase{
     string connectionString;
     SqliteConnection dbConnection;
 
-    public HandleDatabase(){
-        this.connectionString = $"Data Source={Constants.Sql.dataSource}";
+    public HandleDatabase(string dataSource){
+        this.connectionString = $"Data Source={dataSource}";
         this.dbConnection = new SqliteConnection(connectionString);
     }
         
@@ -56,8 +56,8 @@ public class HandleDatabase{
 
 public static class TableExists{
 
-    public static bool Check(string tableName){
-        HandleDatabase databaseHandler = new HandleDatabase();
+    public static bool Check(string tableName, string dataBase){
+        HandleDatabase databaseHandler = new HandleDatabase(dataBase);
         try {
             string query = Constants.Sql.select.Replace("{name}", tableName);
             databaseHandler.RunQuery(query);
