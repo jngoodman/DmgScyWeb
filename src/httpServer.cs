@@ -24,7 +24,7 @@ class Server{
         PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: "bands");
         pageBuilder.Build(sourceUrl: Constants.all_bands_url, TableExists.Check("bands", Constants.Sql.dataSource));
         DataTable? bandTable = pageBuilder.pageData.dataTable;
-        if(bandTable != null){
+        if((bandTable != null)&&(!bands.Any())){
             foreach(DataRow row in bandTable.Rows){
                 string bandName = $"{row["name"]}";
                 string bandUrl = $"{row["url"]}";
@@ -50,14 +50,14 @@ class Server{
         currPage = shutdownReader.html;
     }
 
-    private void AddToFavourites(string sourceUrl, string sourceName){
+    private void AddToFavourites(string sourceUrl, string sourceName, HttpListenerResponse response){
         if(sourceUrl != null){
             BandService favouritesService = new BandService(dataBase: Constants.Sql.dataSource, tableName: "favourites");
             favouritesService.DatabaseCreate();
             Band band = new Band(name: sourceName, url: sourceUrl);
             favouritesService.DatabaseInsertSingle(band);
-            ServeIndex();
         }
+        response.Redirect(Constants.localhost);
     }
 
     private string PullSourceUrl(string sourceName){
@@ -81,8 +81,8 @@ class Server{
         return sourceName;        
     }
 
-    private void HandlePageData(HttpListenerRequest request){
-        if(request.Url?.AbsoluteUri == url){
+    private void HandlePageData(HttpListenerRequest request, HttpListenerResponse response){
+        if((request.Url?.AbsoluteUri == url) || (request.Url?.AbsolutePath == "favicon.ico")){
             ServeIndex();
         }
         else if(request.Url?.AbsolutePath == Constants.Html.shutdownCommand){
@@ -93,10 +93,12 @@ class Server{
             if(sourceName.Contains(Constants.Html.favMarkerUrl)){
                 sourceName = sourceName.Replace(Constants.Html.favMarkerUrl, "");
                 string sourceUrl = PullSourceUrl(sourceName);
-                AddToFavourites(sourceUrl, sourceName);
+                AddToFavourites(sourceUrl, sourceName, response);
             }
             else{
                 string sourceUrl = PullSourceUrl(sourceName);
+                Console.WriteLine(request.Url?.AbsoluteUri);
+                Console.WriteLine(sourceUrl);
                 ServeCollection(sourceUrl, sourceName);
             }
         }
@@ -108,7 +110,7 @@ class Server{
             HttpListenerContext listenerContext = await listener.GetContextAsync();
             HttpListenerRequest request = listenerContext.Request;
             HttpListenerResponse response = listenerContext.Response;
-            HandlePageData(request);
+            HandlePageData(request, response);
             if ((request.HttpMethod == "POST") && (request.Url?.AbsolutePath == Constants.Html.shutdownCommand)){
                 Console.WriteLine("Shutdown requested.");
                 runServer = false;
