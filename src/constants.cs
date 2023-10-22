@@ -23,8 +23,8 @@ static class Constants {
         public static string bandsTableName = "bands";
         public static string favouritesTableName = "favicons";
         public static string dataSource = "src/dmgscy.db";
-        public static string insertFavourites = $"INSERT OR IGNORE INTO favicons (name, state) VALUES (@name, @state);";
-        public static string createFavourites = "CREATE TABLE IF NOT EXISTS favicons (name TEXT NOT NULL, state TEXT NOT NULL, UNIQUE(name));";
+        public static string insertFavourites = $"INSERT OR IGNORE INTO favicons (name, url, state) VALUES (@name, @url, @state);";
+        public static string createFavourites = "CREATE TABLE IF NOT EXISTS favicons (name TEXT NOT NULL, url TEXT NOT NULL, state TEXT NOT NULL, UNIQUE(name));";
         public static string createBands = "CREATE TABLE IF NOT EXISTS bands (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
         public static string addBands = "INSERT OR IGNORE INTO bands (name, url) VALUES (@name, @url);";
         public static string select = "SELECT * FROM {tableName};";

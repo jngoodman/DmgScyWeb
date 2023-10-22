@@ -105,6 +105,7 @@ public class FavouritesHandler{
         foreach(Band band in bandList){
             List<SqliteParameter> parameterList = new List<SqliteParameter>(){
                 new SqliteParameter("@name", band.name),
+                new SqliteParameter("@url", band.url),
                 new SqliteParameter("@state", Constants.notFavIcon)
             };            
         databaseHandler.RunQuery(query, parameters: parameterList);
