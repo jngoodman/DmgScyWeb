@@ -65,7 +65,7 @@ class HtmlParser{
             string imageSource = GetHTML.ReturnValue(image_subnode, Constants.coll_image_attribute);
             UrlToImage imageConverter = new UrlToImage(imageSource);
             string image = imageConverter.image;
-            Collection collection = new Collection { name = name, url = $"{Constants.base_url}{url}", image = image, price = price};
+            Collection collection = new Collection(name: name, url: $"{Constants.base_url}{url}", image: image, price: price);
             itemList.Add(collection);
         }
         return itemList;
@@ -84,11 +84,13 @@ public class HtmlReader {
 
 public class HtmlWriter: HtmlReader {
     DataServiceManager dataServiceManager;
+    FavouritesHandler favouritesHandler;
     string header;
 
     public HtmlWriter(DataServiceManager dataServiceManager, string fileLoc, string header): base(fileLoc){
         this.dataServiceManager = dataServiceManager;
         this.header = header;        
+        this.favouritesHandler = new FavouritesHandler();
     }
 
     private void HandleTableColumns(StringBuilder stringBuilder, DataServiceManager dataServiceManager, DataRow row){
@@ -96,8 +98,9 @@ public class HtmlWriter: HtmlReader {
             stringBuilder.AppendLine("<tr>");
             object bandNameObj = row["name"];
             string bandName = $"{bandNameObj}";
+            string? favIcon = favouritesHandler.SelectState(bandName).Rows[0][0].ToString();
             string bandNameUrl = HttpUtility.UrlEncode(bandName);
-            stringBuilder.Append($"<td><a href = \"{Constants.Html.favMarkerUrl}{bandNameUrl}\"><img id=\"icon\" onclick=\"this.classList.toggle('selected')\" src=\"data: image / png; base64, {Constants.favouriteIconBase64} \" width=\"15\" height=\"15\"></a></td>");
+            stringBuilder.Append($"<td><a href = \"{Constants.Html.favMarkerUrl}{bandNameUrl}\"><img src=\"data: image / png; base64, {favIcon} \" width=\"15\" height=\"15\"></a></td>");
             stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
             stringBuilder.AppendLine("\n</tr>");
         }

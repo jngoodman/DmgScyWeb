@@ -5,33 +5,26 @@ using Microsoft.Data.Sqlite;
 
 namespace DmgScy;
 
-public interface IDataService{
-    public HandleDatabase databaseHandler {get; set; }
-    public string tableName {get; set; }
-}
+public class BandService {
+    public HandleDatabase databaseHandler;
 
-public class BandService: IDataService {
-    public HandleDatabase databaseHandler {get; set; }
-    public string tableName {get; set; }
-
-    public BandService(string tableName, string dataBase){
+    public BandService(string dataBase){
         this.databaseHandler = new HandleDatabase(dataBase); 
-        this.tableName = tableName;            
     }    
 
     public void DatabaseCreate(){
-        string query = Constants.Sql.createBands.Replace("{tableName}", tableName);
+        string query = Constants.Sql.createBands;
         databaseHandler.RunQuery(query);
     }
 
     public DataTable DatabaseSelect(){
-        string query = Constants.Sql.select.Replace("{tableName}", tableName);
+        string query = Constants.Sql.select.Replace("{tableName}", Constants.Sql.bandsTableName);
         DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
         return dataTable;
     }
 
     public void DatabaseInsert(List<Band> bandList){
-        string query = Constants.Sql.addBands.Replace("{tableName}", tableName);
+        string query = Constants.Sql.addBands;
         foreach(Band band in bandList){
             List<SqliteParameter> parameterList = new List<SqliteParameter>(){
                 new SqliteParameter("@name", band.name),
@@ -40,20 +33,11 @@ public class BandService: IDataService {
             databaseHandler.RunQuery(query, parameters: parameterList);
         }
     }
-
-    public void DatabaseInsertSingle(Band band){
-        string query = Constants.Sql.addBands.Replace("{tableName}", tableName);
-        List<SqliteParameter> parameterList = new List<SqliteParameter>(){
-            new SqliteParameter("@name", band.name),
-            new SqliteParameter("@url", band.url)
-        };
-        databaseHandler.RunQuery(query, parameters: parameterList);
-    }
 }  
 
-public class CollectionService: IDataService {
-    public HandleDatabase databaseHandler {get; set; }
-    public string tableName {get; set; }
+public class CollectionService{
+    public HandleDatabase databaseHandler;
+    public string tableName;
 
     public CollectionService(string tableName, string dataBase){
         this.databaseHandler = new HandleDatabase(dataBase);
@@ -83,6 +67,49 @@ public class CollectionService: IDataService {
         databaseHandler.RunQuery(query, parameters: parameterList);
         }
     }      
+}
+
+public class FavouritesHandler{
+    public HandleDatabase databaseHandler;
+
+    public FavouritesHandler(){
+        this.databaseHandler = new HandleDatabase(dataSource: Constants.Sql.dataSource);
+    }
+    
+
+    public void CreateFavourites(){
+        string query = Constants.Sql.createFavourites;
+        databaseHandler.RunQuery(query);
+    }
+
+    public void AddFavourite(string bandName){
+        string query = Constants.Sql.replaceState.Replace("{name}", bandName);
+        query = query.Replace("{newState}", Constants.favIcon);
+        databaseHandler.RunQuery(query);   
+    }
+
+    public void RemoveFavourite(string bandName){
+        string query = Constants.Sql.replaceState.Replace("{name}", bandName);
+        query = query.Replace("{newState}", Constants.notFavIcon);
+        databaseHandler.RunQuery(query);   
+    }
+
+    public DataTable SelectState(string bandName){
+        string query = Constants.Sql.selectState.Replace("{name}", bandName);
+        DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
+        return dataTable;
+    }
+    
+    public void InsertStates(List<Band> bandList){
+        string query = Constants.Sql.insertFavourites;
+        foreach(Band band in bandList){
+            List<SqliteParameter> parameterList = new List<SqliteParameter>(){
+                new SqliteParameter("@name", band.name),
+                new SqliteParameter("@state", Constants.notFavIcon)
+            };            
+        databaseHandler.RunQuery(query, parameters: parameterList);
+        }
+    }
 }
 
 public class DataServiceManager{

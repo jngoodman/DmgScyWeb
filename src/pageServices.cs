@@ -26,6 +26,9 @@ class PageData{
         BandOrCollectionList dataList;
         if(dataServiceManager.dataService.IsT0){
             dataList = parseHtml.ParseBands();
+            FavouritesHandler favouritesHandler = new FavouritesHandler();
+            favouritesHandler.CreateFavourites();
+            favouritesHandler.InsertStates(dataList.AsT0);
         }
         else{
             dataList = parseHtml.ParseCollection();
@@ -72,7 +75,7 @@ class PageBuilder{
     private DataServiceManager InstantiateDataServiceManager(){
         string tableName = pageName;
         if(pageType == PageType.INDEX){
-            return new DataServiceManager(new BandService(tableName: tableName, dataBase: Constants.Sql.dataSource));
+            return new DataServiceManager(new BandService(dataBase: Constants.Sql.dataSource));
         }
         else{
             return new DataServiceManager(new CollectionService(tableName: tableName, dataBase: Constants.Sql.dataSource));

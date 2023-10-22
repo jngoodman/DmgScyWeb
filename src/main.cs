@@ -9,9 +9,9 @@ public static class Run{
         if(DataCleaner.ShouldRefresh()){
             DataCleaner.ClearTempData();
         }
-        Server server = new Server(Constants.localhost);
+        Server server = new Server(Constants.indexUrls[0]);
         server.listener.Start();
-        Console.WriteLine("Listening for connections on {0}", Constants.localhost);
+        Console.WriteLine("Listening for connections on {0}", Constants.indexUrls[0]);
         server.HandleIncomingConnections().GetAwaiter().GetResult();
         server.listener.Close();
     }

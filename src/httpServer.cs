@@ -3,6 +3,7 @@ using System.Net;
 using System.Text;
 using System.Web;
 using System.Data;
+using System.Security.Cryptography.X509Certificates;
 
 namespace DmgScy;
 
@@ -11,18 +12,20 @@ class Server{
     public string url;
     public string? currPage;
     private List<Band> bands;
+    private FavouritesHandler favouritesHandler;
 
     public Server(string url){
         this.url = url;
         this.currPage = null;
         this.bands = new List<Band>();
         this.listener = new HttpListener();
+        this.favouritesHandler = new FavouritesHandler();
         listener.Prefixes.Add(url);
     }
 
     private void ServeIndex(){
-        PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: "bands");
-        pageBuilder.Build(sourceUrl: Constants.all_bands_url, TableExists.Check("bands", Constants.Sql.dataSource));
+        PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: Constants.Sql.bandsTableName);
+        pageBuilder.Build(sourceUrl: Constants.all_bands_url, fromLocal: TableExists.Check(Constants.Sql.bandsTableName, Constants.Sql.dataSource));
         DataTable? bandTable = pageBuilder.pageData.dataTable;
         if((bandTable != null)&&(!bands.Any())){
             foreach(DataRow row in bandTable.Rows){
@@ -35,10 +38,11 @@ class Server{
         currPage = pageReader.html;
     }
 
-    private void ServeCollection(string sourceUrl, string sourceName){
+    private void ServeCollection(string bandName){
+        string pageName = StringCleaner.EraseIllegalChars(bandName);
+        PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: pageName);
+        string? sourceUrl = PullBandUrl(bandName, bands);
         if(sourceUrl != null){
-            string pageName = StringCleaner.EraseIllegalChars(sourceName);
-            PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: pageName);
             pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(pageName, Constants.Sql.dataSource));
             HtmlReader pageReader = new HtmlReader(Constants.Html.collectionLast);
             currPage = pageReader.html;
@@ -50,56 +54,46 @@ class Server{
         currPage = shutdownReader.html;
     }
 
-    private void AddToFavourites(string sourceUrl, string sourceName, HttpListenerResponse response){
-        if(sourceUrl != null){
-            BandService favouritesService = new BandService(dataBase: Constants.Sql.dataSource, tableName: "favourites");
-            favouritesService.DatabaseCreate();
-            Band band = new Band(name: sourceName, url: sourceUrl);
-            favouritesService.DatabaseInsertSingle(band);
+    private void ToggleFavourites(string bandName, HttpListenerResponse response){   
+        string? currentState = favouritesHandler.SelectState(bandName).Rows[0][0].ToString();
+        if(currentState == Constants.favIcon){
+            favouritesHandler.RemoveFavourite(bandName);
         }
-        response.Redirect(Constants.localhost);
+        else if(currentState == Constants.notFavIcon){
+            favouritesHandler.AddFavourite(bandName);
+        }
+        response.Redirect(Constants.indexUrls[0]);
     }
 
-    private string PullSourceUrl(string sourceName){
-        string sourceUrl = "";
-        if(bands != null){
-            Band? band = bands.Find(x => x.name == sourceName);
-            if(band != null){
-                sourceUrl = band.url;
-                }
+    private string? PullBandUrl(string bandName, List<Band> bands){
+        Band? band = bands.Find(x => x.name == bandName);
+        if(band != null){
+            return band.url;
             }
-        return sourceUrl;        
-    }
-
-    private string PullSourceName(HttpListenerRequest request){
-        string sourceName = "";
-        string? partialUrl = request.Url?.AbsolutePath;
-        if(partialUrl != null){
-            string bandName = HttpUtility.UrlDecode(partialUrl);
-            sourceName = bandName.TrimStart('/');
+        return null;
         }
-        return sourceName;        
-    }
 
     private void HandlePageData(HttpListenerRequest request, HttpListenerResponse response){
-        if((request.Url?.AbsoluteUri == url) || (request.Url?.AbsolutePath == "favicon.ico")){
-            ServeIndex();
-        }
-        else if(request.Url?.AbsolutePath == Constants.Html.shutdownCommand){
-            ServeShutdown();
-        }
-        else{
-            string sourceName = PullSourceName(request);
-            if(sourceName.Contains(Constants.Html.favMarkerUrl)){
-                sourceName = sourceName.Replace(Constants.Html.favMarkerUrl, "");
-                string sourceUrl = PullSourceUrl(sourceName);
-                AddToFavourites(sourceUrl, sourceName, response);
+        string? url = request.Url?.AbsoluteUri;
+        if(url != null){
+            if(Constants.indexUrls.Contains(url)){
+                ServeIndex();
+            }
+            else if(url.Contains(Constants.Html.shutdownCommand)){
+                ServeShutdown();
             }
             else{
-                string sourceUrl = PullSourceUrl(sourceName);
-                Console.WriteLine(request.Url?.AbsoluteUri);
-                Console.WriteLine(sourceUrl);
-                ServeCollection(sourceUrl, sourceName);
+                string? rightPart = request.Url?.AbsolutePath;
+                if(rightPart != null){
+                    string bandName = HttpUtility.UrlDecode(rightPart).TrimStart('/');
+                    if(url.Contains(Constants.Html.favMarkerUrl)){
+                        bandName = bandName.Split(Constants.Html.favMarkerUrl)[1];
+                        ToggleFavourites(bandName, response);
+                    }
+                    else{
+                        ServeCollection(bandName);
+                    }
+                }
             }
         }
     }
