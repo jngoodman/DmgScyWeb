@@ -28,6 +28,7 @@ static class Constants {
         public static string createBands = "CREATE TABLE IF NOT EXISTS bands (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
         public static string addBands = "INSERT OR IGNORE INTO bands (name, url) VALUES (@name, @url);";
         public static string select = "SELECT * FROM {tableName};";
+        public static string selectFavourited = $"SELECT name, url FROM favicons WHERE state = '{favIcon}';";
         public static string selectState = "SELECT state FROM favicons WHERE name='{name}';";
         public static string replaceState = "UPDATE favicons SET state = '{newState}' WHERE name = '{name}'";
         public static string createCollection = "CREATE TABLE IF NOT EXISTS {tableName} (name TEXT NOT NULL, url TEXT NOT NULL, image TEXT NOT NULL, price TEXT NOT NULL, UNIQUE(name));";

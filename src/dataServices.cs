@@ -100,6 +100,13 @@ public class FavouritesHandler{
         return dataTable;
     }
     
+    public DataTable SelectFavourited(){
+        string query = Constants.Sql.selectFavourited;
+        DataTable dataTable = databaseHandler.RunQuery(query, returnTable: true);
+        return dataTable;
+    }
+    
+    
     public void InsertStates(List<Band> bandList){
         string query = Constants.Sql.insertFavourites;
         foreach(Band band in bandList){

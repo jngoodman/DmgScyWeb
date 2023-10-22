@@ -117,13 +117,21 @@ public class HtmlWriter: HtmlReader {
     public string ConvertTableToHTML(DataTable dataTable){
         StringBuilder stringBuilder = new StringBuilder();
         if(dataServiceManager.dataService.IsT0){
-        stringBuilder.AppendLine("\n<table>");
+        stringBuilder.AppendLine("\n<table style=\"float: left\"><tr><th>All Bands</th></tr>");
         }
         foreach(DataRow row in dataTable.Rows){
             HandleTableColumns(stringBuilder, dataServiceManager, row);
         }
         if(dataServiceManager.dataService.IsT0){
-        stringBuilder.AppendLine("</table>");
+            stringBuilder.AppendLine("</table><table style=\"float: left\"><tr><th>Favourites</th><tr>");
+            foreach(DataRow row in favouritesHandler.SelectFavourited().Rows){
+                stringBuilder.AppendLine("<tr>");
+                object bandNameObj = row["name"];
+                string bandName = $"{bandNameObj}";
+                string bandNameUrl = HttpUtility.UrlEncode(bandName);
+                stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
+                stringBuilder.AppendLine("\n</tr>");                               
+            }
         }
         return stringBuilder.ToString();
     }
