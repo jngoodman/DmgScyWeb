@@ -73,7 +73,7 @@ class PageBuilder{
     }
 
     private DataServiceManager InstantiateDataServiceManager(){
-        string tableName = pageName;
+        string tableName = StringCleaner.EraseIllegalChars(pageName);
         if(pageType == PageType.INDEX){
             return new DataServiceManager(new BandService(dataBase: Constants.Sql.dataSource));
         }

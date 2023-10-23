@@ -39,11 +39,10 @@ class Server{
     }
 
     private void ServeCollection(string bandName){
-        string pageName = StringCleaner.EraseIllegalChars(bandName);
-        PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: pageName);
+        PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: bandName);
         string? sourceUrl = PullBandUrl(bandName, bands);
         if(sourceUrl != null){
-            pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(pageName, Constants.Sql.dataSource));
+            pageBuilder.Build(sourceUrl: sourceUrl, TableExists.Check(StringCleaner.EraseIllegalChars(bandName), Constants.Sql.dataSource));
             HtmlReader pageReader = new HtmlReader(Constants.Html.collectionLast);
             currPage = pageReader.html;
         }

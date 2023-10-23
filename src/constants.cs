@@ -20,7 +20,7 @@ static class Constants {
     public static int refreshDays = 7;
     
     public static class Sql {
-        public static string bandsTableName = "bands";
+        public static string bandsTableName = "Bands";
         public static string favouritesTableName = "favicons";
         public static string dataSource = "src/dmgscy.db";
         public static string insertFavourites = $"INSERT OR IGNORE INTO favicons (name, url, state) VALUES (@name, @url, @state);";

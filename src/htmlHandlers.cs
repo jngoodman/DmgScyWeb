@@ -117,7 +117,7 @@ public class HtmlWriter: HtmlReader {
     public string ConvertTableToHTML(DataTable dataTable){
         StringBuilder stringBuilder = new StringBuilder();
         if(dataServiceManager.dataService.IsT0){
-        stringBuilder.AppendLine("\n<table style=\"float: left\"><tr><th>All Bands</th></tr>");
+        stringBuilder.AppendLine("\n<table style=\"float: left\"><tr><th colspan=\"2\">All Bands</th></tr>");
         }
         foreach(DataRow row in dataTable.Rows){
             HandleTableColumns(stringBuilder, dataServiceManager, row);
