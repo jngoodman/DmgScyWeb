@@ -4,6 +4,8 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using HtmlAgilityPack;
+using System.Reflection.Metadata;
 
 namespace DmgScy;
 
@@ -72,16 +74,41 @@ public static class TableExists{
 public static class DataCleaner{
 
     public static bool ShouldRefresh(){
-        DateTime creationTime = File.GetCreationTime(Constants.Sql.dataSource);
-        DateTime currentTime = DateTime.Now;
-        TimeSpan span = currentTime.Subtract(creationTime);
-        if(span.Days >= Constants.refreshDays){
-            return true;
+        if(File.Exists(Constants.Sql.refreshToken)){
+            DateTime creationTime = File.GetCreationTime(Constants.Sql.refreshToken);
+            DateTime currentTime = DateTime.Now;
+            TimeSpan span = currentTime.Subtract(creationTime);
+            Console.WriteLine($"Refresh token is {span.Hours} hours old. Existing data will be overwritten after {Constants.refreshHours} hours.");
+            if(span.Hours >= Constants.refreshHours){
+                Console.WriteLine("Refreshing database... updated merchandise data is being requested...");
+                File.Create(Constants.Sql.refreshToken);
+                return true;
+            }
+            Console.WriteLine("Database not refreshed. Where possible, locally-stored data will be used.");
+            return false;
         }
+        Console.WriteLine("Refresh token missing. Creating token now.");
+        File.Create(Constants.Sql.refreshToken);
         return false;
     }
 
     public static void ClearTempData(){
-        File.Delete(Constants.Sql.dataSource);
+        BandService bandService = new BandService(tableName: Constants.Sql.bandsTableName, dataBase: Constants.Sql.dataSource);
+        HandleDatabase databaseHandler = new HandleDatabase(dataSource: Constants.Sql.dataSource);
+        PageData tempData = new PageData(new BandService(tableName: "temp", dataBase: Constants.Sql.dataSource));
+        tempData.ScrapeWebData(url: Constants.all_bands_url, cssSelector: Constants.band_css_selector);
+        databaseHandler.RunQuery(commandString: Constants.Sql.dropTable.Replace("{tableName}", Constants.Sql.favTableName));
+        foreach(DataRow row in bandService.DatabaseSelect().Rows){
+            string bandName = $"{row["name"]}";
+            string state = $"{row["state"]}";
+            databaseHandler.RunQuery(commandString: Constants.Sql.dropTable.Replace("{tableName}", StringCleaner.EraseIllegalChars(bandName)));
+            if(state == Constants.favIcon){
+                tempData.dataService.AsT0.AddFavourite(bandName);
+            }
+        }
+        databaseHandler.RunQuery(commandString: Constants.Sql.dropTable.Replace("{tableName}", Constants.Sql.bandsTableName));
+        string renameQuery = Constants.Sql.renameTable.Replace("{tableName}", "temp");
+        renameQuery = renameQuery.Replace("{newName}", Constants.Sql.bandsTableName);
+        databaseHandler.RunQuery(commandString: renameQuery);
     }
 }

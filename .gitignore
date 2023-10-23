@@ -5,6 +5,7 @@ pagedata/last_collection.html
 bin/
 obj/
 temp/
+src/refreshtoken.file
 
 
 __pycache__/

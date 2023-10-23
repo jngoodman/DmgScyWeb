@@ -17,12 +17,13 @@ static class Constants {
     public static List<string> indexUrls = new List<string>(){"http://localhost:8000/", "http://localhost:8000/favicon.ico"};
     public static string legalTableCharacters = "abcdefghijklmnopqrstuvwxyz";
     public static string imageRightPartEncoder = "?v=";
-    public static int refreshDays = 7;
+    public static int refreshHours = 168;
     
     public static class Sql {
-        public static string bandsTableName = "bands";
-        public static string favTableName = "favourites";
+        public static string bandsTableName = "Bands";
+        public static string favTableName = "Favourites";
         public static string dataSource = "src/dmgscy.db";
+        public static string refreshToken = "src/refreshtoken.file";
         public static string createBands = "CREATE TABLE IF NOT EXISTS {tableName} (name TEXT NOT NULL, url TEXT NOT NULL, state TEXT NOT NULL, UNIQUE(name));";
         public static string addBands = "INSERT OR IGNORE INTO {tableName} (name, url, state) VALUES (@name, @url, @state);";
         public static string selectFrom = "SELECT {targetColumn} FROM {tableName} WHERE {conditionColumn} = '{condition}';";
@@ -30,6 +31,8 @@ static class Constants {
         public static string select = "SELECT * FROM {tableName};";
         public static string createCollection = "CREATE TABLE IF NOT EXISTS {tableName} (name TEXT NOT NULL, url TEXT NOT NULL, image TEXT NOT NULL, price TEXT NOT NULL, UNIQUE(name));";
         public static string addCollection = "INSERT OR IGNORE INTO {tableName} (name, url, image, price) VALUES (@name, @url, @image, @price);";
+        public static string dropTable = "DROP TABLE IF EXISTS {tableName}";
+        public static string renameTable = "ALTER TABLE {tableName} RENAME TO {newName}";
     }
 
     public static class Html {
