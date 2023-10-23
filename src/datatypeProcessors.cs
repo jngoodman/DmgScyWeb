@@ -8,7 +8,7 @@ public static class StringCleaner{
         inputString = inputString.ToLower();
         List<string> outputList = new List<string>();
         foreach(char character in inputString){
-            if(Constants.legalTableCharacters.Contains(character)){
+            if(Constants.InternalStorage.Tables.legalCharacters.Contains(character)){
                 outputList.Add(character.ToString());
             }
         }
@@ -22,7 +22,7 @@ public class UrlToImage{
     public string image {get; set;}
     
     public UrlToImage(string url){     
-        this.source = url.Split(Constants.imageRightPartEncoder)[0];
+        this.source = url.Split(Constants.ExternalUrls.imageRightPartEncoder)[0];
         if(!source.StartsWith("https")){
             source = "https:" + source;
         }

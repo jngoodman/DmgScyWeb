@@ -21,74 +21,50 @@ class Server{
     }
 
     private void ServeIndex(){
-        PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: Constants.Sql.bandsTableName);
-        pageBuilder.Build(sourceUrl: Constants.all_bands_url, fromLocal: TableExists.Check(Constants.Sql.bandsTableName, Constants.Sql.dataSource));
-        HtmlReader pageReader = new HtmlReader(Constants.Html.index);
+        PageBuilder pageBuilder = new PageBuilder(PageType.INDEX, pageName: Constants.InternalStorage.Tables.bands);
+        pageBuilder.Build(sourceUrl: Constants.ExternalUrls.allBandsUrl, fromLocal: TableExists.Check(Constants.InternalStorage.Tables.bands, Constants.InternalStorage.dataBase));
+        HtmlReader pageReader = new HtmlReader(Constants.Html.Templates.index);
         currPage = pageReader.html;
     }
 
     private void ServeCollection(string bandName){
         PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: bandName);
         string sourceUrl = PullBandUrl(bandName);
-        pageBuilder.Build(sourceUrl: sourceUrl, fromLocal: TableExists.Check(StringCleaner.EraseIllegalChars(bandName), dataBase: Constants.Sql.dataSource));
-        HtmlReader pageReader = new HtmlReader(Constants.Html.collectionLast);
+        pageBuilder.Build(sourceUrl: sourceUrl, fromLocal: TableExists.Check(StringCleaner.EraseIllegalChars(bandName), dataBase: Constants.InternalStorage.dataBase));
+        HtmlReader pageReader = new HtmlReader(Constants.Html.Templates.collection);
         currPage = pageReader.html;
     }
 
     private void ServeShutdown(){
-        HtmlReader shutdownReader = new HtmlReader(Constants.Html.shutdown); 
+        HtmlReader shutdownReader = new HtmlReader(Constants.Html.Templates.shutdown); 
         currPage = shutdownReader.html;
     }
 
     private void ToggleFavourites(string bandName, HttpListenerResponse response){
-        BandService bandService = new BandService(dataBase: Constants.Sql.dataSource, tableName: Constants.Sql.bandsTableName);
+        BandService bandService = new BandService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.bands);
         string currentState = $"{bandService.PullState(bandName).Rows[0][0]}";            
-        if(currentState == Constants.favIcon){
+        if(currentState == Constants.InternalStorage.Images.favourited){
             bandService.RemoveFavourite(bandName);
         }
-        else if(currentState == Constants.notFavIcon){
+        else if(currentState == Constants.InternalStorage.Images.notFavourited){
             bandService.AddFavourite(bandName);
         }
-        response.Redirect(Constants.indexUrls[0]);
+        response.Redirect(Constants.InternalUrls.indexUrls[0]);
     }
 
     private void ServeFavourites(){   
-        BandService bandService = new BandService(dataBase: Constants.Sql.dataSource, tableName: Constants.Sql.bandsTableName);
-        CollectionService favouritesService = new CollectionService(dataBase: Constants.Sql.dataSource, tableName: Constants.Sql.favTableName);
+        BandService bandService = new BandService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.bands);
+        CollectionService favouritesService = new CollectionService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.favourites);
         favouritesService.DatabaseCreate();
-        foreach(DataRow row in bandService.SelectFavourited().Rows){
-            string bandName = $"{row["name"]}";
-            string bandUrl = $"{row["url"]}";
-            CollectionService collectionService = new CollectionService(tableName: StringCleaner.EraseIllegalChars(bandName), dataBase: Constants.Sql.dataSource); 
-            if(!TableExists.Check(StringCleaner.EraseIllegalChars(bandName), Constants.Sql.dataSource)){
-                PageData collectionData = new PageData(collectionService);
-                BandOrCollectionList? dataList = collectionData.ScrapeWebData(url: bandUrl, cssSelector: Constants.collection_css_selector);
-                if(dataList != null){
-                    favouritesService.DatabaseInsert(dataList.AsT1);  
-                }             
-            }
-            else{
-                DataTable dataTable = collectionService.DatabaseSelect();
-                List<Collection> dataList = new List<Collection>();
-                foreach(DataRow itemRow in dataTable.Rows){
-                    string name  = $"{itemRow["name"]}";
-                    string url  = $"{itemRow["url"]}";
-                    string price  = $"{itemRow["price"]}";
-                    string image  = $"{itemRow["image"]}";
-                    Collection collection = new Collection(name: name, url: url, price: price, image: image);
-                    dataList.Add(collection);
-                }
-                favouritesService.DatabaseInsert(dataList);
-            }
-        }
-        PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: Constants.Sql.favTableName);
+        favouritesService.InsertFavouritedCollections(bandService);
+        PageBuilder pageBuilder = new PageBuilder(PageType.COLLECTION, pageName: Constants.InternalStorage.Tables.favourites);
         pageBuilder.Build(sourceUrl: "", fromLocal: true);
-        HtmlReader pageReader = new HtmlReader(Constants.Html.collectionLast);
+        HtmlReader pageReader = new HtmlReader(Constants.Html.Templates.collection);
         currPage = pageReader.html;
     }
 
     private string PullBandUrl(string bandName){
-        BandService bandService = new BandService(dataBase: Constants.Sql.dataSource, tableName: Constants.Sql.bandsTableName);
+        BandService bandService = new BandService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.bands);
         string url = $"{bandService.PullUrl(bandName).Rows[0][0]}";
         return url;
         }
@@ -96,21 +72,21 @@ class Server{
     private void HandlePageData(HttpListenerRequest request, HttpListenerResponse response){
         string? url = request.Url?.AbsoluteUri;
         if(url != null){
-            if(Constants.indexUrls.Contains(url)){
+            if(Constants.InternalUrls.indexUrls.Contains(url)){
                 ServeIndex();
             }
-            else if(url.Contains(Constants.Html.shutdownCommand)){
+            else if(url.Contains(Constants.InternalUrls.shutdownCommand)){
                 ServeShutdown();
             }
-            else if(url.Contains(Constants.Html.favouritesRightPart)){
+            else if(url.Contains(Constants.InternalUrls.favouritesCommand)){
                 ServeFavourites();
             }
             else{
                 string? rightPart = request.Url?.AbsolutePath;
                 if(rightPart != null){
                     string bandName = HttpUtility.UrlDecode(rightPart).TrimStart('/');
-                    if(url.Contains(Constants.Html.favPart)){
-                        bandName = bandName.Split(Constants.Html.favPart)[1];
+                    if(url.Contains(Constants.InternalUrls.favouritesSplitter)){
+                        bandName = bandName.Split(Constants.InternalUrls.favouritesSplitter)[1];
                         ToggleFavourites(bandName, response);
                     }
                     else{
@@ -128,7 +104,7 @@ class Server{
             HttpListenerRequest request = listenerContext.Request;
             HttpListenerResponse response = listenerContext.Response;
             HandlePageData(request, response);
-            if ((request.HttpMethod == "POST") && (request.Url?.AbsolutePath == Constants.Html.shutdownCommand)){
+            if ((request.HttpMethod == "POST") && (request.Url?.AbsolutePath == Constants.InternalUrls.shutdownCommand)){
                 Console.WriteLine("Shutdown requested.");
                 runServer = false;
             }
@@ -144,7 +120,7 @@ class Server{
                 };
             }
             catch (HttpListenerException){
-                Console.WriteLine("Connection temporarily dropped.");
+                Console.WriteLine("Temporary connection issue.");
             }
             response.Close();
         }

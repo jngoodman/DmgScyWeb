@@ -61,7 +61,7 @@ public static class TableExists{
     public static bool Check(string tableName, string dataBase){
         HandleDatabase databaseHandler = new HandleDatabase(dataBase);
         try {
-            string query = Constants.Sql.select.Replace("{name}", tableName);
+            string query = Constants.InternalStorage.SqlCommands.select.Replace("{name}", tableName);
             databaseHandler.RunQuery(query);
             return true;
         }
@@ -74,41 +74,41 @@ public static class TableExists{
 public static class DataCleaner{
 
     public static bool ShouldRefresh(){
-        if(File.Exists(Constants.Sql.refreshToken)){
-            DateTime creationTime = File.GetCreationTime(Constants.Sql.refreshToken);
+        if(File.Exists(Constants.InternalStorage.refreshToken)){
+            DateTime creationTime = File.GetCreationTime(Constants.InternalStorage.refreshToken);
             DateTime currentTime = DateTime.Now;
             TimeSpan span = currentTime.Subtract(creationTime);
-            Console.WriteLine($"Refresh token is {span.Hours} hours old. Existing data will be overwritten after {Constants.refreshHours} hours.");
-            if(span.Hours >= Constants.refreshHours){
+            Console.WriteLine($"Refresh token is {span.Hours} hours old. Existing data will be overwritten after {Constants.InternalStorage.refreshHours} hours.");
+            if(span.Hours >= Constants.InternalStorage.refreshHours){
                 Console.WriteLine("Refreshing database... updated merchandise data is being requested...");
-                File.Create(Constants.Sql.refreshToken);
+                File.Create(Constants.InternalStorage.refreshToken);
                 return true;
             }
             Console.WriteLine("Database not refreshed. Where possible, locally-stored data will be used.");
             return false;
         }
         Console.WriteLine("Refresh token missing. Creating token now.");
-        File.Create(Constants.Sql.refreshToken);
+        File.Create(Constants.InternalStorage.refreshToken);
         return false;
     }
 
     public static void ClearTempData(){
-        BandService bandService = new BandService(tableName: Constants.Sql.bandsTableName, dataBase: Constants.Sql.dataSource);
-        HandleDatabase databaseHandler = new HandleDatabase(dataSource: Constants.Sql.dataSource);
-        PageData tempData = new PageData(new BandService(tableName: "temp", dataBase: Constants.Sql.dataSource));
-        tempData.ScrapeWebData(url: Constants.all_bands_url, cssSelector: Constants.band_css_selector);
-        databaseHandler.RunQuery(commandString: Constants.Sql.dropTable.Replace("{tableName}", Constants.Sql.favTableName));
+        BandService bandService = new BandService(tableName: Constants.InternalStorage.Tables.bands, dataBase: Constants.InternalStorage.dataBase);
+        HandleDatabase databaseHandler = new HandleDatabase(dataSource: Constants.InternalStorage.dataBase);
+        PageData tempData = new PageData(new BandService(tableName: "temp", dataBase: Constants.InternalStorage.dataBase));
+        tempData.ScrapeWebData(url: Constants.ExternalUrls.allBandsUrl, cssSelector: Constants.Selectors.bandCssSelector);
+        databaseHandler.RunQuery(commandString: Constants.InternalStorage.SqlCommands.dropTable.Replace("{tableName}", Constants.InternalStorage.Tables.favourites));
         foreach(DataRow row in bandService.DatabaseSelect().Rows){
             string bandName = $"{row["name"]}";
             string state = $"{row["state"]}";
-            databaseHandler.RunQuery(commandString: Constants.Sql.dropTable.Replace("{tableName}", StringCleaner.EraseIllegalChars(bandName)));
-            if(state == Constants.favIcon){
+            databaseHandler.RunQuery(commandString: Constants.InternalStorage.SqlCommands.dropTable.Replace("{tableName}", StringCleaner.EraseIllegalChars(bandName)));
+            if(state == Constants.InternalStorage.Images.favourited){
                 tempData.dataService.AsT0.AddFavourite(bandName);
             }
         }
-        databaseHandler.RunQuery(commandString: Constants.Sql.dropTable.Replace("{tableName}", Constants.Sql.bandsTableName));
-        string renameQuery = Constants.Sql.renameTable.Replace("{tableName}", "temp");
-        renameQuery = renameQuery.Replace("{newName}", Constants.Sql.bandsTableName);
+        databaseHandler.RunQuery(commandString: Constants.InternalStorage.SqlCommands.dropTable.Replace("{tableName}", Constants.InternalStorage.Tables.bands));
+        string renameQuery = Constants.InternalStorage.SqlCommands.renameTable.Replace("{tableName}", "temp");
+        renameQuery = renameQuery.Replace("{newName}", Constants.InternalStorage.Tables.bands);
         databaseHandler.RunQuery(commandString: renameQuery);
     }
 }

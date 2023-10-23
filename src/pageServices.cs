@@ -39,11 +39,11 @@ class PageData{
         string outfileLoc = "";
         if(dataService.IsT0){
             dataTable = dataService.AsT0.DatabaseSelect();
-            outfileLoc = Constants.Html.index;
+            outfileLoc = Constants.Html.Templates.index;
         }
         else if(dataService.IsT1){
             dataTable = dataService.AsT1.DatabaseSelect();
-            outfileLoc = Constants.Html.collectionLast;
+            outfileLoc = Constants.Html.Templates.collection;
         }
         if(dataTable != null){
             string dataTableHtml = htmlWriter.ConvertTableToHTML(dataTable);
@@ -77,29 +77,29 @@ class PageBuilder{
     private BandOrCollectionService InstantiateDataService(){
         string tableName = StringCleaner.EraseIllegalChars(pageName);
         if(pageType == PageType.INDEX){
-            return new BandService(dataBase: Constants.Sql.dataSource, tableName: Constants.Sql.bandsTableName);
+            return new BandService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.bands);
         }
         else{
-            return new CollectionService(tableName: tableName, dataBase: Constants.Sql.dataSource);
+            return new CollectionService(tableName: tableName, dataBase: Constants.InternalStorage.dataBase);
         }
     }
 
     private HtmlWriter InstantiateHtmlWriter(){
         if(pageType == PageType.INDEX){
-            return new HtmlWriter(fileLoc: Constants.Html.indexBase, dataService: dataService, header: pageName);
+            return new HtmlWriter(fileLoc: Constants.Html.Templates.indexBase, dataService: dataService, header: pageName);
         }
         else{
-            return new HtmlWriter(fileLoc: Constants.Html.collectionBase, dataService: dataService, header: pageName);
+            return new HtmlWriter(fileLoc: Constants.Html.Templates.collectionBase, dataService: dataService, header: pageName);
         }
     }
 
     public void Build(string sourceUrl, bool fromLocal = false){
         if(!fromLocal){
             if(pageType == PageType.INDEX){
-                pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.band_css_selector);
+                pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.Selectors.bandCssSelector);
             }
             else if(pageType == PageType.COLLECTION){
-                pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.collection_css_selector);
+                pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.Selectors.collectionCssSelector);
             }
         }
         pageData.CreatePageData(htmlWriter);

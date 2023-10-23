@@ -44,10 +44,10 @@ class HtmlParser{
     public List<Band> ParseBands(){
         List<Band> bandList = new List<Band>();
         foreach(HtmlNode node in nodes){
-            HtmlNode link_subnode = GetHTML.ReturnSubNode(node, Constants.band_link_selector);
+            HtmlNode link_subnode = GetHTML.ReturnSubNode(node, Constants.Selectors.bandLinkSelector);
             string name = GetHTML.ReturnInnerText(link_subnode);
-            string url = GetHTML.ReturnValue(link_subnode, Constants.url_attribute);
-            Band band = new Band(name: name, url: $"{Constants.base_url}{url}", state: Constants.notFavIcon);
+            string url = GetHTML.ReturnValue(link_subnode, Constants.Selectors.urlAttribute);
+            Band band = new Band(name: name, url: $"{Constants.ExternalUrls.baseUrl}{url}", state: Constants.InternalStorage.Images.notFavourited);
             bandList.Add(band);
             }
         return bandList;
@@ -56,16 +56,16 @@ class HtmlParser{
     public List<Collection> ParseCollection(){
         List<Collection> itemList = new List<Collection>();
         foreach(var node in nodes){
-            HtmlNode link_subnode = GetHTML.ReturnSubNode(node, Constants.coll_link_selector);
+            HtmlNode link_subnode = GetHTML.ReturnSubNode(node, Constants.Selectors.collectionLinkSelector);
             string name = GetHTML.ReturnInnerText(link_subnode);
-            string url = GetHTML.ReturnValue(link_subnode, Constants.url_attribute);
-            HtmlNode price_subnode = GetHTML.ReturnSubNode(node, Constants.coll_price_selector);
+            string url = GetHTML.ReturnValue(link_subnode, Constants.Selectors.urlAttribute);
+            HtmlNode price_subnode = GetHTML.ReturnSubNode(node, Constants.Selectors.collectionPriceSelector);
             string price = GetHTML.ReturnInnerText(price_subnode);
-            HtmlNode image_subnode = GetHTML.ReturnSubNode(node, Constants.coll_image_selector);
-            string imageSource = GetHTML.ReturnValue(image_subnode, Constants.coll_image_attribute);
+            HtmlNode image_subnode = GetHTML.ReturnSubNode(node, Constants.Selectors.collectionImageSelector);
+            string imageSource = GetHTML.ReturnValue(image_subnode, Constants.Selectors.collectionImageAttribute);
             UrlToImage imageConverter = new UrlToImage(imageSource);
             string image = imageConverter.image;
-            Collection collection = new Collection(name: name, url: $"{Constants.base_url}{url}", image: image, price: price);
+            Collection collection = new Collection(name: name, url: $"{Constants.ExternalUrls.baseUrl}{url}", image: image, price: price);
             itemList.Add(collection);
         }
         return itemList;
@@ -121,7 +121,7 @@ public class HtmlWriter: HtmlReader {
         if(dataService.IsT0){
             stringBuilder.Append(Constants.Html.Builders.favouritesTableHeader);
             foreach(DataRow row in dataTable.Rows){
-                if($"{row["state"]}" == Constants.favIcon){
+                if($"{row["state"]}" == Constants.InternalStorage.Images.favourited){
                     string rowData = Constants.Html.Builders.favouritesRow;
                     rowData = rowData.Replace("{bandName}", $"{row["name"]}");
                     rowData = rowData.Replace("{bandNameUrl}", HttpUtility.UrlEncode($"{row["name"]}"));
@@ -133,8 +133,8 @@ public class HtmlWriter: HtmlReader {
     }
 
     public string InsertTableIntoHTML(string tableAsHtml){
-        string newHtml = html.Replace(Constants.Html.tableMarker, tableAsHtml);
-        newHtml = newHtml.Replace(Constants.Html.titleMarker, header);
+        string newHtml = html.Replace(Constants.Html.Wildcards.tableMarker, tableAsHtml);
+        newHtml = newHtml.Replace(Constants.Html.Wildcards.titleMarker, header);
         return newHtml;
     }
 
