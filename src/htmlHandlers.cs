@@ -47,7 +47,7 @@ class HtmlParser{
             HtmlNode link_subnode = GetHTML.ReturnSubNode(node, Constants.band_link_selector);
             string name = GetHTML.ReturnInnerText(link_subnode);
             string url = GetHTML.ReturnValue(link_subnode, Constants.url_attribute);
-            Band band = new Band(name: name, url: $"{Constants.base_url}{url}");
+            Band band = new Band(name: name, url: $"{Constants.base_url}{url}", state: Constants.notFavIcon);
             bandList.Add(band);
             }
         return bandList;
@@ -83,54 +83,50 @@ public class HtmlReader {
 }
 
 public class HtmlWriter: HtmlReader {
-    DataServiceManager dataServiceManager;
-    FavouritesHandler favouritesHandler;
+    BandOrCollectionService dataService;
     string header;
 
-    public HtmlWriter(DataServiceManager dataServiceManager, string fileLoc, string header): base(fileLoc){
-        this.dataServiceManager = dataServiceManager;
-        this.header = header;        
-        this.favouritesHandler = new FavouritesHandler();
+    public HtmlWriter(BandOrCollectionService dataService, string fileLoc, string header): base(fileLoc){
+        this.dataService = dataService;
+        this.header = header;
     }
 
-    private void HandleTableColumns(StringBuilder stringBuilder, DataServiceManager dataServiceManager, DataRow row){
-        if(dataServiceManager.dataService.IsT0){
-            stringBuilder.AppendLine("<tr>");
-            object bandNameObj = row["name"];
-            string bandName = $"{bandNameObj}";
-            string? favIcon = favouritesHandler.SelectState(bandName).Rows[0][0].ToString();
-            string bandNameUrl = HttpUtility.UrlEncode(bandName);
-            stringBuilder.Append($"<td><a href = \"{Constants.Html.favMarkerUrl}{bandNameUrl}\"><img src=\"data: image / png; base64, {favIcon} \" width=\"15\" height=\"15\"></a></td>");
-            stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
-            stringBuilder.AppendLine("\n</tr>");
+    private void HandleRows(StringBuilder stringBuilder, DataRow row){
+        if(dataService.IsT0){
+            string rowData = Constants.Html.Builders.indexMainRow;
+            rowData = rowData.Replace("{bandName}", $"{row["name"]}");
+            rowData = rowData.Replace("{favIcon}", $"{row["state"]}");
+            rowData = rowData.Replace("{bandNameUrl}", HttpUtility.UrlEncode($"{row["name"]}"));
+            stringBuilder.Append(rowData);
         }
-        if(dataServiceManager.dataService.IsT1){
-            object itemName = row["name"];
-            object itemUrl = row["url"];
-            object itemPrice = row["price"];
-            object itemImage = row["image"];
-            stringBuilder.AppendLine($"<table style=\"float: left;\"><td><a href = \"{itemUrl}\"><img src=\"data: image / png; base64, {itemImage} \" width=\"206\" height=\"300\" alt=\"{itemName}\"></a></td>");
-            stringBuilder.AppendLine($"<tr><th>{itemPrice}</th></tr></table>");
+        if(dataService.IsT1){
+            string rowData = Constants.Html.Builders.collectionMainRow;
+            rowData = rowData.Replace("{itemName}", $"{row["name"]}");
+            rowData = rowData.Replace("{itemUrl}", $"{row["url"]}");
+            rowData = rowData.Replace("{itemPrice}", $"{row["price"]}");
+            rowData = rowData.Replace("{itemImage}", $"{row["image"]}");
+            stringBuilder.Append(rowData);
         } 
     }
 
+
     public string ConvertTableToHTML(DataTable dataTable){
         StringBuilder stringBuilder = new StringBuilder();
-        if(dataServiceManager.dataService.IsT0){
-        stringBuilder.AppendLine("\n<table style=\"float: left\"><tr><th colspan=\"2\">All Bands</th></tr>");
+        if(dataService.IsT0){
+        stringBuilder.Append(Constants.Html.Builders.indexTableHeader);
         }
         foreach(DataRow row in dataTable.Rows){
-            HandleTableColumns(stringBuilder, dataServiceManager, row);
+            HandleRows(stringBuilder, row);
         }
-        if(dataServiceManager.dataService.IsT0){
-            stringBuilder.AppendLine("</table><table style=\"float: left\"><tr><th>Favourites</th><tr>");
-            foreach(DataRow row in favouritesHandler.SelectFavourited().Rows){
-                stringBuilder.AppendLine("<tr>");
-                object bandNameObj = row["name"];
-                string bandName = $"{bandNameObj}";
-                string bandNameUrl = HttpUtility.UrlEncode(bandName);
-                stringBuilder.Append($"<td><a href = \"{bandNameUrl}\">{bandName}</a></td>");
-                stringBuilder.AppendLine("\n</tr>");                               
+        if(dataService.IsT0){
+            stringBuilder.Append(Constants.Html.Builders.favouritesTableHeader);
+            foreach(DataRow row in dataTable.Rows){
+                if($"{row["state"]}" == Constants.favIcon){
+                    string rowData = Constants.Html.Builders.favouritesRow;
+                    rowData = rowData.Replace("{bandName}", $"{row["name"]}");
+                    rowData = rowData.Replace("{bandNameUrl}", HttpUtility.UrlEncode($"{row["name"]}"));
+                    stringBuilder.Append(rowData);
+                }                    
             }
         }
         return stringBuilder.ToString();

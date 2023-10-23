@@ -20,17 +20,14 @@ static class Constants {
     public static int refreshDays = 7;
     
     public static class Sql {
-        public static string bandsTableName = "Bands";
-        public static string favouritesTableName = "favicons";
+        public static string bandsTableName = "bands";
+        public static string favTableName = "favourites";
         public static string dataSource = "src/dmgscy.db";
-        public static string insertFavourites = $"INSERT OR IGNORE INTO favicons (name, url, state) VALUES (@name, @url, @state);";
-        public static string createFavourites = "CREATE TABLE IF NOT EXISTS favicons (name TEXT NOT NULL, url TEXT NOT NULL, state TEXT NOT NULL, UNIQUE(name));";
-        public static string createBands = "CREATE TABLE IF NOT EXISTS bands (name TEXT NOT NULL, url TEXT NOT NULL, UNIQUE(name));";
-        public static string addBands = "INSERT OR IGNORE INTO bands (name, url) VALUES (@name, @url);";
+        public static string createBands = "CREATE TABLE IF NOT EXISTS {tableName} (name TEXT NOT NULL, url TEXT NOT NULL, state TEXT NOT NULL, UNIQUE(name));";
+        public static string addBands = "INSERT OR IGNORE INTO {tableName} (name, url, state) VALUES (@name, @url, @state);";
+        public static string selectFrom = "SELECT {targetColumn} FROM {tableName} WHERE {conditionColumn} = '{condition}';";
+        public static string updateValue = "UPDATE {tableName} SET {targetColumn} = '{newValue}' WHERE {conditionColumn} = '{condition}'";
         public static string select = "SELECT * FROM {tableName};";
-        public static string selectFavourited = $"SELECT name, url FROM favicons WHERE state = '{favIcon}';";
-        public static string selectState = "SELECT state FROM favicons WHERE name='{name}';";
-        public static string replaceState = "UPDATE favicons SET state = '{newState}' WHERE name = '{name}'";
         public static string createCollection = "CREATE TABLE IF NOT EXISTS {tableName} (name TEXT NOT NULL, url TEXT NOT NULL, image TEXT NOT NULL, price TEXT NOT NULL, UNIQUE(name));";
         public static string addCollection = "INSERT OR IGNORE INTO {tableName} (name, url, image, price) VALUES (@name, @url, @image, @price);";
     }
@@ -45,7 +42,17 @@ static class Constants {
         public static string favCommand = "/favourite";
         public static string tableMarker = "##TableMarker##";
         public static string titleMarker = "##TitleMarker##";
-        public static string favMarkerUrl = "&favourite&";
+        public static string favPart = "&favourite&";
+        public static string favouritesRightPart = "favourites";
+
+        public static class Builders{
+            public static string indexTableHeader = "<table style=\"float: left\"><tr><th style=\"text-align: left\" colspan=\"2\">All Bands</th></tr>";
+            public static string indexMainRow = "<tr><td><a href = \"" + Constants.Html.favPart + "{bandNameUrl}\"><img src=\"data: image / png; base64, {favIcon} \" width=\"15\" height=\"15\"></a></td><td><a href = \"{bandNameUrl}\">{bandName}</a></td></tr>";
+            public static string collectionMainRow = "<table style=\"float: left;\"><td><a href = \"{itemUrl}\"><img src=\"data: image / png; base64, {itemImage} \" width=\"206\" height=\"300\" alt=\"{itemName}\"></a></td><tr><th>{itemPrice}</th></tr></table>";
+            public static string favouritesTableHeader = "</table><table style=\"float: left\"><tr><th style=\"text-align: left\">Favourites</th></tr><tr><td><form method=\"post\" action=\"favourites\"><input type=\"submit\" value=\"Show All\"></form></td></tr>";
+            public static string favouritesRow = "<tr><td><a href = \"{bandNameUrl}\">{bandName}</a></td></tr>";
+
+        }
     }
 
     public static string favIcon = "iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAE/SURBVDhPrZPRagIxEEVntW4LtuBL34T+Qv//b9qXgkihBUFd1/TeZKJJTGIKe8CdJDO5mWRG+QcrtZNi1N5lpnZSqqJdpwNkaT6ctd87VEVNIDGMOmjgmksZl+UjfgdseLNr1X1Nb3o643NU20DuxPDdjsiylzlGvL5azTYk0uEkenwtSJER2c6T+6WH+BPsu+32Iv1CZPGAFb8xVyBmTHDAcMJ1BpHl00U8aBpfEAoisBmNDwsYvQVwwsyypSgal3ZEKkqcMD21Vld/KkhyLdUx8GuDUc5LsE5/TpCUtrliVaj5i6Ivz/j46zMXVtznhHXrL5ATNeYT/8oeIxXbfmO4dtaL0689ffPyqaibM4yi7AD06es7F6WzFvOfX1j6r0Q6N48MXPWBFoKEcTazJCbSyYqqJTm/pzVuCkT+AF6CVURB95a8AAAAAElFTkSuQmCC";

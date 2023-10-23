@@ -10,43 +10,45 @@ using Microsoft.AspNetCore.Http.Features;
 namespace DmgScy;
 
 class PageData{
-    public HtmlWriter htmlWriter;
-    public DataServiceManager dataServiceManager;
+    public BandOrCollectionService dataService;
     public DataTable? dataTable;
 
-    public PageData(HtmlWriter htmlWriter, DataServiceManager dataServiceManager){
-        this.htmlWriter = htmlWriter;
-        this.dataServiceManager = dataServiceManager;
+    public PageData(BandOrCollectionService dataService){
+        this.dataService = dataService;
     }
 
-    public void ScrapeWebData(string url, string cssSelector){
+    public BandOrCollectionList? ScrapeWebData(string url, string cssSelector){
         GetHTML getHtml = new GetHTML(url);
         IList<HtmlNode> nodes = getHtml.ReturnNodes(cssSelector);
         HtmlParser parseHtml = new HtmlParser(nodes);
-        BandOrCollectionList dataList;
-        if(dataServiceManager.dataService.IsT0){
+        BandOrCollectionList? dataList = null;
+        if(dataService.IsT0){
             dataList = parseHtml.ParseBands();
-            FavouritesHandler favouritesHandler = new FavouritesHandler();
-            favouritesHandler.CreateFavourites();
-            favouritesHandler.InsertStates(dataList.AsT0);
+            dataService.AsT0.DatabaseCreate();
+            dataService.AsT0.DatabaseInsert(dataList.AsT0);
         }
-        else{
+        else if(dataService.IsT1){
             dataList = parseHtml.ParseCollection();
+            dataService.AsT1.DatabaseCreate();
+            dataService.AsT1.DatabaseInsert(dataList.AsT1);
         }
-        dataServiceManager.GenDataTable(dataList);  
+        return dataList;
     }
 
-    public DataTable? CreatePageData(){
-        dataTable = dataServiceManager.SelectTable();
+    public DataTable? CreatePageData(HtmlWriter htmlWriter){
+        string outfileLoc = "";
+        if(dataService.IsT0){
+            dataTable = dataService.AsT0.DatabaseSelect();
+            outfileLoc = Constants.Html.index;
+        }
+        else if(dataService.IsT1){
+            dataTable = dataService.AsT1.DatabaseSelect();
+            outfileLoc = Constants.Html.collectionLast;
+        }
         if(dataTable != null){
             string dataTableHtml = htmlWriter.ConvertTableToHTML(dataTable);
             string newHtml = htmlWriter.InsertTableIntoHTML(dataTableHtml);
-            if(dataServiceManager.dataService.IsT0){
-                htmlWriter.WriteNewHTML(outfileLoc: Constants.Html.index, newHtml);
-            }
-            else if(dataServiceManager.dataService.IsT1){
-                htmlWriter.WriteNewHTML(outfileLoc: Constants.Html.collectionLast, newHtml);
-            }
+            htmlWriter.WriteNewHTML(outfileLoc: outfileLoc, newHtml);
         }
         return dataTable;
     }
@@ -60,34 +62,34 @@ enum PageType{
 class PageBuilder{
     public PageData pageData;
     public PageType pageType;
-    private DataServiceManager dataServiceManager;
+    private BandOrCollectionService dataService;
     private HtmlWriter htmlWriter;
     public string pageName;
 
     public PageBuilder(PageType pageType, string pageName){
         this.pageName = pageName;
         this.pageType = pageType;
-        this.dataServiceManager = InstantiateDataServiceManager();
+        this.dataService = InstantiateDataService();
         this.htmlWriter = InstantiateHtmlWriter();
-        this.pageData = new PageData(dataServiceManager: dataServiceManager, htmlWriter: htmlWriter);
+        this.pageData = new PageData(dataService: dataService);
     }
 
-    private DataServiceManager InstantiateDataServiceManager(){
+    private BandOrCollectionService InstantiateDataService(){
         string tableName = StringCleaner.EraseIllegalChars(pageName);
         if(pageType == PageType.INDEX){
-            return new DataServiceManager(new BandService(dataBase: Constants.Sql.dataSource));
+            return new BandService(dataBase: Constants.Sql.dataSource, tableName: Constants.Sql.bandsTableName);
         }
         else{
-            return new DataServiceManager(new CollectionService(tableName: tableName, dataBase: Constants.Sql.dataSource));
+            return new CollectionService(tableName: tableName, dataBase: Constants.Sql.dataSource);
         }
     }
 
     private HtmlWriter InstantiateHtmlWriter(){
         if(pageType == PageType.INDEX){
-            return new HtmlWriter(fileLoc: Constants.Html.indexBase, dataServiceManager: dataServiceManager, header: pageName);
+            return new HtmlWriter(fileLoc: Constants.Html.indexBase, dataService: dataService, header: pageName);
         }
         else{
-            return new HtmlWriter(fileLoc: Constants.Html.collectionBase, dataServiceManager: dataServiceManager, header: pageName);
+            return new HtmlWriter(fileLoc: Constants.Html.collectionBase, dataService: dataService, header: pageName);
         }
     }
 
@@ -100,6 +102,6 @@ class PageBuilder{
                 pageData.ScrapeWebData(url: sourceUrl, cssSelector: Constants.collection_css_selector);
             }
         }
-        pageData.CreatePageData();
+        pageData.CreatePageData(htmlWriter);
     }
 }
