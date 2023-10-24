@@ -17,6 +17,7 @@ class Server{
         this.url = url;
         this.currPage = null;
         this.listener = new HttpListener();
+        listener.IgnoreWriteExceptions = true;
         listener.Prefixes.Add(url);
     }
 
@@ -40,7 +41,7 @@ class Server{
         currPage = shutdownReader.html;
     }
 
-    private void ToggleFavourites(string bandName, HttpListenerResponse response){
+    private void ToggleFavourites(string bandName){
         BandService bandService = new BandService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.bands);
         string currentState = $"{bandService.PullState(bandName).Rows[0][0]}";            
         if(currentState == Constants.InternalStorage.Images.favourited){
@@ -49,11 +50,11 @@ class Server{
         else if(currentState == Constants.InternalStorage.Images.notFavourited){
             bandService.AddFavourite(bandName);
         }
-        response.Redirect(Constants.InternalUrls.indexUrls[0]);
     }
 
     private void ServeFavourites(){   
         BandService bandService = new BandService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.bands);
+        bandService.databaseHandler.RunQuery(commandString: Constants.InternalStorage.SqlCommands.dropTable.Replace("{tableName}", Constants.InternalStorage.Tables.favourites));
         CollectionService favouritesService = new CollectionService(dataBase: Constants.InternalStorage.dataBase, tableName: Constants.InternalStorage.Tables.favourites);
         favouritesService.DatabaseCreate();
         favouritesService.InsertFavouritedCollections(bandService);
@@ -73,6 +74,12 @@ class Server{
         string? url = request.Url?.AbsoluteUri;
         if(url != null){
             if(Constants.InternalUrls.indexUrls.Contains(url)){
+                if(request.HttpMethod == "POST"){
+                    using(StreamReader reader = new StreamReader(request.InputStream, request.ContentEncoding)){
+                        string bandName = HttpUtility.UrlDecode(reader.ReadToEnd().Split(".x=")[0]);
+                        ToggleFavourites(bandName);
+                    }
+                }
                 ServeIndex();
             }
             else if(url.Contains(Constants.InternalUrls.shutdownCommand)){
@@ -85,13 +92,7 @@ class Server{
                 string? rightPart = request.Url?.AbsolutePath;
                 if(rightPart != null){
                     string bandName = HttpUtility.UrlDecode(rightPart).TrimStart('/');
-                    if(url.Contains(Constants.InternalUrls.favouritesSplitter)){
-                        bandName = bandName.Split(Constants.InternalUrls.favouritesSplitter)[1];
-                        ToggleFavourites(bandName, response);
-                    }
-                    else{
-                        ServeCollection(bandName);
-                    }
+                    ServeCollection(bandName);
                 }
             }
         }
@@ -120,7 +121,6 @@ class Server{
                 };
             }
             catch (HttpListenerException){
-                Console.WriteLine("Temporary connection issue.");
             }
             response.Close();
         }

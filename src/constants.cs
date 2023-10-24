@@ -1,5 +1,6 @@
 using System.Net.NetworkInformation;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using OneOf;
 
 namespace DmgScy;
@@ -57,8 +58,8 @@ static class Constants {
         }
 
         public static class Images {           
-            public static string favourited = "iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAE/SURBVDhPrZPRagIxEEVntW4LtuBL34T+Qv//b9qXgkihBUFd1/TeZKJJTGIKe8CdJDO5mWRG+QcrtZNi1N5lpnZSqqJdpwNkaT6ctd87VEVNIDGMOmjgmksZl+UjfgdseLNr1X1Nb3o643NU20DuxPDdjsiylzlGvL5azTYk0uEkenwtSJER2c6T+6WH+BPsu+32Iv1CZPGAFb8xVyBmTHDAcMJ1BpHl00U8aBpfEAoisBmNDwsYvQVwwsyypSgal3ZEKkqcMD21Vld/KkhyLdUx8GuDUc5LsE5/TpCUtrliVaj5i6Ivz/j46zMXVtznhHXrL5ATNeYT/8oeIxXbfmO4dtaL0689ffPyqaibM4yi7AD06es7F6WzFvOfX1j6r0Q6N48MXPWBFoKEcTazJCbSyYqqJTm/pzVuCkT+AF6CVURB95a8AAAAAElFTkSuQmCC";
-            public static string notFavourited = "iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsIAAA7CARUoSoAAAAEsSURBVDhPrZJLjoMwDIYd3hKbOQniCNx/BfdAYsMCDa/p73FoSBNIJb5FTYj74cSmL/iR+Ci7xFsiiY9yKVVKyRPtbdty5NUNl9J9fzvWdZWne0KOz1XmeU6h1Qbd6bZtXCliCMelGZiV/L6qy6IoYqGOdV3L9sHJg8XpOHJEL1puYn9Ef4HvbZomStOUkiQ5Ou86spaikcuy0DzPVBSFlr9n5gWL4zj+qtM6XwuPHwMWo0pznHzoPFMIbCkIEvuEwDVSCol93/MfXeA99l1C4J1T3NUVV/teaVmW8vRfGTpuVm7u27ike9d1lGUZLyAbhoGqquKoxwn7MtMfF29LeY0G4HiImNOmafBaIWI9jqN9/JPH230gjQBmHldm5Zw8TqlE4NrXhOY9AdEfPWONFBD8XLAAAAAASUVORK5CYII=";
+            public static string favourited = "iVBORw0KGgoAAAANSUhEUgAAABUAAAAVCAYAAACpF6WWAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAFCSURBVDhPrZPBbsIwEETXBdKqwKGH3irxC/3/v2kvlaqqFUhIiEDpjL0bEicxi+iTEsfZzWS8a4cTEAchhCek/ui0yDWi4kyVOx3/FZdodPmWRg9up/VRHxxcFDWXs0dxu3U5PfzittfRQa/7mZM93FUywROXr2NYMXQm3xVU6LzhEksc4XaSrS//SXRqddvuRKoZ6jdFxD4cahAdE/ygPmA5tcj8IYnTdbN8ExYKItGN5psg6dS0EaZLT1M0ry1IOtVhINaHgpd2DuMDgiQr+Vn44xOTXlTBe8aHBMnYZ6lZBUrxUdHlAjczwaWy41YSvI/xEXqisVnvIvcVJ7gg9vWNx5c0mjjjbGp2WCIdUSSkHUiHFGXDsE+fX1PtOHK+3mhcab5TBo+pnaq4E0A7xZy1c/JmFc9+ntymlNcTvR2RP9dBlS9oim88AAAAAElFTkSuQmCC";
+            public static string notFavourited = favourited + "\" class=\"unfavourited\"";
         }
     }
 
@@ -72,9 +73,9 @@ static class Constants {
             public static string shutdown = InternalStorage.pagedataSubdir + "\\shutdown.html";
 
             public static class Init {
-                public static string index = "<!DOCTYPE html><link rel=\"icon\" href=\"data:,\"><meta charset=\"utf-8\"><body><form style=\"float: right\" method=\"post\" action=\"shutdown\"><input type=\"submit\" value=\"Shutdown\"></form>##TableMarker##</body>";  
-                public static string collection = "<!DOCTYPE html><link rel=\"icon\" href=\"data:,\"><meta charset=\"utf-8\"></style><form method=\"post\" style = \"float: right\" action=\"shutdown\"><input type=\"submit\" value=\"Shutdown\"></form><h1>##TitleMarker##</h1><body>##TableMarker##</body>";
-                public static string shutdown = "<!DOCTYPE html><h1>Server closed. You can now close this tab.</h1>";
+                public static string index = "<!DOCTYPE html>\n<link rel=\"icon\" href=\"data:,\">\n<meta charset=\"utf-8\">\n<style>\n.unfavourited{\n opacity: 0.33 \n}\nbutton{\nbackground: transparent; \n border: none;\n}\n</style>\n<body>\n<form style=\"float: right\" method=\"post\" action=\"shutdown\">\n<input type=\"submit\" value=\"Shutdown\">\n</form>##TableMarker##\n<iframe name=\"dummyframe\" id=\"dummyframe\" style=\"display: none;\">\n</iframe>\n</body>";  
+                public static string collection = "<!DOCTYPE html>\n<link rel=\"icon\" href=\"data:,\">\n<meta charset=\"utf-8\">\n<form method=\"post\" style = \"float: right\" action=\"shutdown\"><input type=\"submit\" value=\"Shutdown\">\n</form>\n<h1>\n##TitleMarker##\n</h1>\n<body>##TableMarker##\n</body>";
+                public static string shutdown = "<!DOCTYPE html>\n<h1>\nServer closed. You can now close this tab.\n</h1>";
             }
         }
 
@@ -84,11 +85,11 @@ static class Constants {
         }    
 
         public static class Builders{
-            public static string indexTableHeader = "<table style=\"float: left\"><tr><th style=\"text-align: left\" colspan=\"2\">All Bands</th></tr>";
-            public static string indexMainRow = "<tr><td><a href = \"" + InternalUrls.favouritesSplitter + "{bandNameUrl}\"><img src=\"data: image / png; base64, {favIcon} \" width=\"15\" height=\"15\"></a></td><td><a href = \"{bandNameUrl}\">{bandName}</a></td></tr>";
-            public static string collectionMainRow = "<table style=\"float: left;\"><td><a href = \"{itemUrl}\"><img src=\"data: image / png; base64, {itemImage} \" width=\"206\" height=\"300\" alt=\"{itemName}\"></a></td><tr><th>{itemPrice}</th></tr></table>";
-            public static string favouritesTableHeader = "</table><table style=\"float: left\"><tr><th style=\"text-align: left\">Favourites</th></tr><tr><td><form method=\"post\" action=\"favourites\"><input type=\"submit\" value=\"Show All\"></form></td></tr>";
-            public static string favouritesRow = "<tr><td><a href = \"{bandNameUrl}\">{bandName}</a></td></tr>";
+            public static string indexTableHeader = "\n<table style=\"float: left\">\n<tr>\n<th style=\"text-align: left\" colspan=\"2\">\nAll Bands\n</th>\n</tr>";
+            public static string indexMainRow = "\n<tr>\n<td>\n<form target=\"dummyframe\" method=\"post\"><input type=\"image\" name=\"{bandName}\" onclick=\"this.classList.toggle('unfavourited')\" src=\"data: image / png; base64, {favIcon}\" width=\"15\" height=\"15\">\n</form>\n</td>\n<td>\n<a href = \"{bandNameUrl}\">\n{bandName}\n</a>\n</td>\n</tr>";
+            public static string collectionMainRow = "\n<table style=\"float: left;\">\n<td>\n<a href = \"{itemUrl}\">\n<img src=\"data: image / png; base64, {itemImage} \" width=\"206\" height=\"300\" alt=\"{itemName}\">\n</a>\n</td>\n<tr>\n<th>\n{itemPrice}\n</th>\n</tr>\n</table>";
+            public static string favouritesTableHeader = "\n</table>\n<table style=\"float: left\">\n<tr>\n<th style=\"text-align: left\">\nFavourites\n</th>\n</tr>\n<tr>\n<td>\n<form method=\"post\" action=\"favourites\">\n<input type=\"submit\" value=\"Show All\">\n</form>\n</td>\n</tr>";
+            public static string favouritesRow = "\n<tr>\n<td>\n<a href = \"{bandNameUrl}\">\n{bandName}\n</a>\n</td>\n</tr>";
 
         }
     }
