@@ -5,7 +5,8 @@ namespace DmgScy;
 
 public static class Run{
     
-    public static void Main(){        
+    public static void Main(){       
+        Init.RequiredFiles(); 
         if(DataCleaner.ShouldRefresh()){
             DataCleaner.ClearTempData();
         }

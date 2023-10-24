@@ -1,4 +1,5 @@
 using System.Net.NetworkInformation;
+using System.Security.Cryptography.X509Certificates;
 using OneOf;
 
 namespace DmgScy;
@@ -29,9 +30,13 @@ static class Constants {
     }
 
     public static class InternalStorage{
-        public static string refreshToken = "src/refreshtoken.file";
-        public static string dataBase = "src/dmgscy.db";
         public static int refreshHours = 168;
+        public static string dirName = "\\DMGSCYWebscraper";
+        public static string appDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + dirName;
+        public static string databaseSubdir = appDirectory + "\\database";
+        public static string pagedataSubdir = appDirectory + "\\pagedata";
+        public static string refreshToken = databaseSubdir + "\\refreshtoken.file";
+        public static string dataBase = databaseSubdir + "\\dmgscy.db";
 
         public static class Tables{
             public static string bands = "Bands";
@@ -60,11 +65,17 @@ static class Constants {
     public static class Html {
         
         public static class Templates {
-            public static string indexBase = "pagedata/index_base.html";
-            public static string collectionBase = "pagedata/collection_base.html";
-            public static string index = "pagedata/index.html";
-            public static string collection = "pagedata/collection.html";
-            public static string shutdown = "pagedata/shutdown.html";
+            public static string indexBase = InternalStorage.pagedataSubdir + "\\index_base.html";
+            public static string collectionBase = InternalStorage.pagedataSubdir+ "\\collection_base.html";
+            public static string index = InternalStorage.pagedataSubdir + "\\index.html";
+            public static string collection = InternalStorage.pagedataSubdir + "\\collection.html";
+            public static string shutdown = InternalStorage.pagedataSubdir + "\\shutdown.html";
+
+            public static class Init {
+                public static string index = "<!DOCTYPE html><link rel=\"icon\" href=\"data:,\"><meta charset=\"utf-8\"><body><form style=\"float: right\" method=\"post\" action=\"shutdown\"><input type=\"submit\" value=\"Shutdown\"></form>##TableMarker##</body>";  
+                public static string collection = "<!DOCTYPE html><link rel=\"icon\" href=\"data:,\"><meta charset=\"utf-8\"></style><form method=\"post\" style = \"float: right\" action=\"shutdown\"><input type=\"submit\" value=\"Shutdown\"></form><h1>##TitleMarker##</h1><body>##TableMarker##</body>";
+                public static string shutdown = "<!DOCTYPE html><h1>Server closed. You can now close this tab.</h1>";
+            }
         }
 
         public static class Wildcards {

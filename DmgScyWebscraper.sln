@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DmgScyWebNew", "DmgScyWebNew.csproj", "{BABE0AE2-6F38-40C3-B65A-A0987818E7EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DmgScyWebscraper", "DmgScyWebscraper.csproj", "{BABE0AE2-6F38-40C3-B65A-A0987818E7EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
